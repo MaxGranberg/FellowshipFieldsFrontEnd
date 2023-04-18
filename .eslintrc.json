@@ -1,0 +1,12 @@
+{
+    "extends": ["airbnb", "airbnb/hooks"],
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    },
+    "rules": {
+        "semi": ["error", "never"]
+    }
+  }
+  
