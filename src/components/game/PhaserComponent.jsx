@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import Phaser from 'phaser'
 import { GridEngine } from 'grid-engine'
-import GameScene from './GameScene.js'
+import GameScene from './GameScene'
 
 function PhaserGame() {
   const gameRef = useRef()
