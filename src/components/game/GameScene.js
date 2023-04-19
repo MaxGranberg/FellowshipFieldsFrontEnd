@@ -16,6 +16,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.load.spritesheet('player', '/assets/images/walking/char1_walk.png', { frameWidth: 32, frameHeight: 32 })
     this.load.spritesheet('player_clothes', '/assets/images/walking/clothes/spooky_walk.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('player_hair', '/assets/images/walking/hair1.png', { frameWidth: 32, frameHeight: 32 })
 
     this.load.spritesheet('trees', '/assets/images/tiles/tree_shake1.png', { frameWidth: 32, frameHeight: 32 })
     this.load.on('complete', () => {
@@ -65,6 +66,12 @@ export default class GameScene extends Phaser.Scene {
     clothingSprite.scale = 0.8
     this.createClothesAnimations('player_clothes')
 
+    // Add hair
+    const hairSprite = this.add.sprite(0, 0, 'player_hair').setFrame(0)
+    hairSprite.setDepth(clothingSprite.depth + 1)
+    hairSprite.scale = 0.8
+    this.createClothesAnimations('player_hair') // ändra namn på den funktionen sen
+
     this.cameras.main.startFollow(playerSprite, true)
     this.cameras.main.setZoom(3)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -85,6 +92,12 @@ export default class GameScene extends Phaser.Scene {
           startPosition: { x: 30, y: 20 },
           speed: 4,
         },
+        {
+          id: 'player_hair',
+          sprite: hairSprite,
+          startPosition: { x: 30, y: 20 },
+          speed: 4,
+        },
       ],
     }
 
@@ -99,6 +112,8 @@ export default class GameScene extends Phaser.Scene {
     const playerSprite = this.gridEngine.getSprite('player')
     const clothingSprite = this.gridEngine.getSprite('player_clothes')
     clothingSprite.setPosition(playerSprite.x, playerSprite.y)
+    const hairSprite = this.gridEngine.getSprite('player_hair')
+    hairSprite.setPosition(playerSprite.x, playerSprite.y)
 
     this.updatePlayerDepth({ id: 'player' })
 
@@ -106,32 +121,50 @@ export default class GameScene extends Phaser.Scene {
       if (cursors.left.isDown) {
         this.gridEngine.move('player', 'left')
         this.gridEngine.move('player_clothes', 'left')
+        this.gridEngine.move('player_hair', 'left')
+
         playerSprite.anims.play('walk-left', true)
         clothingSprite.anims.play('walk-left-player_clothes', true)
+        hairSprite.anims.play('walk-left-player_hair', true)
+
         this.playerDirection = 'left'
       } else if (cursors.right.isDown) {
         this.gridEngine.move('player', 'right')
         this.gridEngine.move('player_clothes', 'right')
+        this.gridEngine.move('player_hair', 'right')
+
         playerSprite.anims.play('walk-right', true)
         clothingSprite.anims.play('walk-right-player_clothes', true)
+        hairSprite.anims.play('walk-right-player_hair', true)
+
         this.playerDirection = 'right'
       } else if (cursors.up.isDown) {
         this.gridEngine.move('player', 'up')
         this.gridEngine.move('player_clothes', 'up')
+        this.gridEngine.move('player_hair', 'up')
+
         playerSprite.anims.play('walk-up', true)
         clothingSprite.anims.play('walk-up-player_clothes', true)
+        hairSprite.anims.play('walk-up-player_hair', true)
+
         this.playerDirection = 'up'
       } else if (cursors.down.isDown) {
         this.gridEngine.move('player', 'down')
         this.gridEngine.move('player_clothes', 'down')
+        this.gridEngine.move('player_hair', 'down')
+
         playerSprite.anims.play('walk-down', true)
         clothingSprite.anims.play('walk-down-player_clothes', true)
+        hairSprite.anims.play('walk-down-player_hair', true)
+
         this.playerDirection = 'down'
       } else {
         playerSprite.anims.stop()
         clothingSprite.anims.stop()
+        hairSprite.anims.stop()
         playerSprite.setFrame(this.getStopFrame(this.playerDirection))
         clothingSprite.setFrame(this.getStopFrame(this.playerDirection))
+        hairSprite.setFrame(this.getStopFrame(this.playerDirection))
       }
     }
 
@@ -204,6 +237,9 @@ export default class GameScene extends Phaser.Scene {
   updatePlayerDepth(char) {
     if (char.id === 'player') {
       const playerSprite = this.gridEngine.getSprite(char.id)
+      const clothingSprite = this.gridEngine.getSprite('player_clothes')
+      const hairSprite = this.gridEngine.getSprite('player_hair')
+
       const playerTile = this.map
         .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
 
@@ -212,8 +248,12 @@ export default class GameScene extends Phaser.Scene {
 
       if (housesTile) {
         playerSprite.setDepth(housesLayer.depth + 1)
+        clothingSprite.setDepth(housesLayer.depth + 1)
+        hairSprite.setDepth(housesLayer.depth + 1)
       } else {
         playerSprite.setDepth(8)
+        clothingSprite.setDepth(8)
+        hairSprite.setDepth(8)
       }
     }
   }
