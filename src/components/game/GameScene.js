@@ -55,6 +55,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Create animations for the character
     const playerSprite = this.physics.add.sprite(0, 0, 'player').setFrame(0)
+    playerSprite.scale = 0.8
     this.createCharacterAnimations()
 
     this.cameras.main.startFollow(playerSprite, true)
@@ -161,7 +162,8 @@ export default class GameScene extends Phaser.Scene {
   updatePlayerDepth(char) {
     if (char.id === 'player') {
       const playerSprite = this.gridEngine.getSprite(char.id)
-      const playerTile = this.map.worldToTileXY(playerSprite.x, playerSprite.y)
+      const playerTile = this.map
+        .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
 
       const housesLayer = this.layers.Houses
       const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
@@ -169,7 +171,7 @@ export default class GameScene extends Phaser.Scene {
       if (housesTile) {
         playerSprite.setDepth(housesLayer.depth + 1)
       } else {
-        playerSprite.setDepth(7)
+        playerSprite.setDepth(8)
       }
     }
   }
