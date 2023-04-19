@@ -15,6 +15,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('crops', '/assets/images/farming/crops_all.png')
 
     this.load.spritesheet('player', '/assets/images/walking/char1_walk.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('player_clothes', '/assets/images/walking/clothes/spooky_walk.png', { frameWidth: 32, frameHeight: 32 })
 
     this.load.spritesheet('trees', '/assets/images/tiles/tree_shake1.png', { frameWidth: 32, frameHeight: 32 })
     this.load.on('complete', () => {
@@ -58,6 +59,12 @@ export default class GameScene extends Phaser.Scene {
     playerSprite.scale = 0.8
     this.createCharacterAnimations()
 
+    // Add clothes
+    const clothingSprite = this.add.sprite(0, 0, 'player_clothes').setFrame(0)
+    clothingSprite.setDepth(playerSprite.depth + 1)
+    clothingSprite.scale = 0.8
+    this.createClothesAnimations('player_clothes')
+
     this.cameras.main.startFollow(playerSprite, true)
     this.cameras.main.setZoom(3)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -69,6 +76,12 @@ export default class GameScene extends Phaser.Scene {
         {
           id: 'player',
           sprite: playerSprite,
+          startPosition: { x: 30, y: 20 },
+          speed: 4,
+        },
+        {
+          id: 'player_clothes',
+          sprite: clothingSprite,
           startPosition: { x: 30, y: 20 },
           speed: 4,
         },
@@ -84,29 +97,41 @@ export default class GameScene extends Phaser.Scene {
   update() {
     const cursors = this.input.keyboard.createCursorKeys()
     const playerSprite = this.gridEngine.getSprite('player')
+    const clothingSprite = this.gridEngine.getSprite('player_clothes')
+    clothingSprite.setPosition(playerSprite.x, playerSprite.y)
 
     this.updatePlayerDepth({ id: 'player' })
 
     if (!this.gridEngine.isMoving('player')) {
       if (cursors.left.isDown) {
         this.gridEngine.move('player', 'left')
+        this.gridEngine.move('player_clothes', 'left')
         playerSprite.anims.play('walk-left', true)
+        clothingSprite.anims.play('walk-left-player_clothes', true)
         this.playerDirection = 'left'
       } else if (cursors.right.isDown) {
         this.gridEngine.move('player', 'right')
+        this.gridEngine.move('player_clothes', 'right')
         playerSprite.anims.play('walk-right', true)
+        clothingSprite.anims.play('walk-right-player_clothes', true)
         this.playerDirection = 'right'
       } else if (cursors.up.isDown) {
         this.gridEngine.move('player', 'up')
+        this.gridEngine.move('player_clothes', 'up')
         playerSprite.anims.play('walk-up', true)
+        clothingSprite.anims.play('walk-up-player_clothes', true)
         this.playerDirection = 'up'
       } else if (cursors.down.isDown) {
         this.gridEngine.move('player', 'down')
+        this.gridEngine.move('player_clothes', 'down')
         playerSprite.anims.play('walk-down', true)
+        clothingSprite.anims.play('walk-down-player_clothes', true)
         this.playerDirection = 'down'
       } else {
         playerSprite.anims.stop()
+        clothingSprite.anims.stop()
         playerSprite.setFrame(this.getStopFrame(this.playerDirection))
+        clothingSprite.setFrame(this.getStopFrame(this.playerDirection))
       }
     }
 
@@ -123,12 +148,29 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createCharacterAnimations() {
-    // Create walking animation for each row of players sprite sheet. (8 columns and 4 rows)
+    // Create walking animation for each row of sprite sheet. (8 columns and 4 rows)
     const directions = ['down', 'up', 'right', 'left']
     directions.forEach((dir, rowIndex) => {
       this.anims.create({
         key: `walk-${dir}`,
         frames: this.anims.generateFrameNumbers('player', {
+          start: rowIndex * 8,
+          end: rowIndex * 8 + 7,
+          first: rowIndex * 8,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      })
+    })
+  }
+
+  createClothesAnimations(spriteKey) {
+    // Create walking animation for each row of sprite sheet. (8 columns and 4 rows)
+    const directions = ['down', 'up', 'right', 'left']
+    directions.forEach((dir, rowIndex) => {
+      this.anims.create({
+        key: `walk-${dir}-${spriteKey}`,
+        frames: this.anims.generateFrameNumbers(spriteKey, {
           start: rowIndex * 8,
           end: rowIndex * 8 + 7,
           first: rowIndex * 8,
