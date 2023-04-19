@@ -34,17 +34,11 @@ export default class GameScene extends Phaser.Scene {
     const cropsTileset = map.addTilesetImage('crops', 'crops')
 
     const layers = {}
+    const tilesets = [farmGroundTileset, housesTileset, cropsTileset]
 
-    const layerNames = ['Ground', 'farmGround', 'brygga & broar', 'brygga2 & broar2', 'crops', 'Plants and rocks', 'fences', 'Benches, lightposts & objects', 'Trees', 'trees2', 'Houses', 'HousesWalkBehind', 'Trees3', 'Collisions']
-    layerNames.forEach((layerName, index) => {
-      layers[layerName] = map
-        .createLayer(layerName, [farmGroundTileset, housesTileset, cropsTileset])
-
-      layers[layerName].setDepth(index + 1)
-
-      if (layerName === 'HousesWalkBehind') {
-        layers[layerName].setDepth(100)
-      }
+    map.layers.forEach((layer) => {
+      const layerName = layer.name
+      layers[layerName] = map.createLayer(layerName, tilesets)
     })
 
     const animatedTreeObjects = map.getObjectLayer('animatedTreesObjects').objects.filter((obj) => obj.properties.some((prop) => prop.name === 'type' && prop.value === 'animatedTree'))
@@ -89,6 +83,8 @@ export default class GameScene extends Phaser.Scene {
   update() {
     const cursors = this.input.keyboard.createCursorKeys()
     const playerSprite = this.gridEngine.getSprite('player')
+
+    this.updatePlayerDepth({ id: 'player' })
 
     if (!this.gridEngine.isMoving('player')) {
       if (cursors.left.isDown) {
@@ -160,5 +156,21 @@ export default class GameScene extends Phaser.Scene {
         break
     }
     return this.stopFrame
+  }
+
+  updatePlayerDepth(char) {
+    if (char.id === 'player') {
+      const playerSprite = this.gridEngine.getSprite(char.id)
+      const playerTile = this.map.worldToTileXY(playerSprite.x, playerSprite.y)
+
+      const housesLayer = this.layers.Houses
+      const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
+
+      if (housesTile) {
+        playerSprite.setDepth(housesLayer.depth + 1)
+      } else {
+        playerSprite.setDepth(7)
+      }
+    }
   }
 }
