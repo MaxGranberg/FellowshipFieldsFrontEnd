@@ -27,14 +27,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Animated trees
     this.load.spritesheet('trees', '/assets/images/tiles/tree_shake1.png', { frameWidth: 32, frameHeight: 32 })
-    this.load.on('complete', () => {
-      this.anims.create({
-        key: 'treeAnimation',
-        frames: this.anims.generateFrameNumbers('trees', { start: 0, end: 3 }),
-        frameRate: 8,
-        repeat: -1,
-      })
-    })
   }
 
   create() {
@@ -51,6 +43,12 @@ export default class GameScene extends Phaser.Scene {
       layers[layerName] = map.createLayer(layerName, tilesets)
     })
 
+    this.anims.create({
+      key: 'treeAnimation',
+      frames: this.anims.generateFrameNumbers('trees', { start: 0, end: 3 }),
+      frameRate: 8,
+      repeat: -1,
+    })
     const animatedTreeObjects = map.getObjectLayer('animatedTreesObjects').objects.filter((obj) => obj.properties.some((prop) => prop.name === 'type' && prop.value === 'animatedTree'))
 
     this.treeContainer = this.add.container()
@@ -96,10 +94,15 @@ export default class GameScene extends Phaser.Scene {
     this.createClothesAnimations('npc_hair')
 
     this.cameras.main.startFollow(playerSprite, true)
-    this.cameras.main.setZoom(3)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+    this.cameras.main.setZoom(3)
+    this.physics.world.createDebugGraphic()
+    this.physics.world.drawDebug = true
+    npcSprite.setDebugBodyColor(0xff0000) // Draw NPC bounding box in red
 
     layers.Collisions.setCollisionByProperty({ collides: true })
+    this.physics.add.collider(playerSprite, layers.Collisions)
+    this.physics.add.collider(npcSprite, layers.Collisions)
 
     const gridEngineConfig = {
       characters: [
@@ -124,19 +127,19 @@ export default class GameScene extends Phaser.Scene {
         {
           id: 'npc',
           sprite: npcSprite,
-          startPosition: { x: 30, y: 25 },
+          startPosition: { x: 25, y: 25 },
           speed: 1,
         },
         {
           id: 'npc_clothes',
           sprite: npcClothingSprite,
-          startPosition: { x: 30, y: 25 },
+          startPosition: { x: 25, y: 25 },
           speed: 1,
         },
         {
           id: 'npc_hair',
           sprite: npcHairSprite,
-          startPosition: { x: 30, y: 25 },
+          startPosition: { x: 25, y: 25 },
           speed: 1,
         },
       ],
@@ -204,9 +207,9 @@ export default class GameScene extends Phaser.Scene {
         playerSprite.anims.stop()
         clothingSprite.anims.stop()
         hairSprite.anims.stop()
-        playerSprite.setFrame(this.getStopFrame(this.playerDirection))
-        clothingSprite.setFrame(this.getStopFrame(this.playerDirection))
-        hairSprite.setFrame(this.getStopFrame(this.playerDirection))
+        playerSprite.setFrame(this.getStopFrame(this.playerDirection, true))
+        clothingSprite.setFrame(this.getStopFrame(this.playerDirection, true))
+        hairSprite.setFrame(this.getStopFrame(this.playerDirection, true))
       }
     }
 
@@ -315,18 +318,16 @@ export default class GameScene extends Phaser.Scene {
 
     // Add simple AI logic for the NPC here
     this.gridEngine.moveRandomly('npc')
-
     const direction = this.gridEngine.getFacingDirection('npc')
+    this.gridEngine.move('npc', direction)
+    this.gridEngine.move('npc_clothes', direction)
+    this.gridEngine.move('npc_hair', direction)
 
-    if (this.gridEngine.isMoving('npc')) {
-      this.gridEngine.move('npc', direction)
-      this.gridEngine.move('npc_clothes', direction)
-      this.gridEngine.move('npc_hair', direction)
+    npcSprite.anims.play(`walk-${direction}`, true)
+    npcClothingSprite.anims.play(`walk-${direction}-npc_clothes`, true)
+    npcHairSprite.anims.play(`walk-${direction}-npc_hair`, true)
 
-      npcSprite.anims.play(`walk-${direction}`, true)
-      npcClothingSprite.anims.play(`walk-${direction}-npc_clothes`, true)
-      npcHairSprite.anims.play(`walk-${direction}-npc_hair`, true)
-    } else {
+    if (!this.gridEngine.isMoving('npc')) {
       npcSprite.anims.stop()
       npcClothingSprite.anims.stop()
       npcHairSprite.anims.stop()
