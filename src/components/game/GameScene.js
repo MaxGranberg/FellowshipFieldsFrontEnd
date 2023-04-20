@@ -5,7 +5,8 @@ export default class GameScene extends Phaser.Scene {
     super('GameScene')
     this.treeSprites = {}
     this.treeContainer = null
-    this.stopFrame = null
+    this.playerStopFrame = null
+    this.npcStopFrame = null
   }
 
   preload() {
@@ -14,10 +15,17 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('houses', '/assets/images/Buildings/buildings.png')
     this.load.image('crops', '/assets/images/farming/crops_all.png')
 
+    // Player
     this.load.spritesheet('player', '/assets/images/walking/char1_walk.png', { frameWidth: 32, frameHeight: 32 })
     this.load.spritesheet('player_clothes', '/assets/images/walking/clothes/spooky_walk.png', { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('player_hair', '/assets/images/walking/hair1.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('player_hair', '/assets/images/walking/hair/hair1.png', { frameWidth: 32, frameHeight: 32 })
 
+    // NPC
+    this.load.spritesheet('npc', '/assets/images/walking/char4_walk.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('npc_clothes', '/assets/images/walking/clothes/custom_overalls_walk.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('npc_hair', '/assets/images/walking/hair/hair2.png', { frameWidth: 32, frameHeight: 32 })
+
+    // Animated trees
     this.load.spritesheet('trees', '/assets/images/tiles/tree_shake1.png', { frameWidth: 32, frameHeight: 32 })
     this.load.on('complete', () => {
       this.anims.create({
@@ -58,7 +66,7 @@ export default class GameScene extends Phaser.Scene {
     // Create animations for the character
     const playerSprite = this.physics.add.sprite(0, 0, 'player').setFrame(0)
     playerSprite.scale = 0.8
-    this.createCharacterAnimations()
+    this.createCharacterAnimations('player')
 
     // Add clothes
     const clothingSprite = this.add.sprite(0, 0, 'player_clothes').setFrame(0)
@@ -71,6 +79,21 @@ export default class GameScene extends Phaser.Scene {
     hairSprite.setDepth(clothingSprite.depth + 1)
     hairSprite.scale = 0.8
     this.createClothesAnimations('player_hair') // ändra namn på den funktionen sen
+
+    // Now same for NPC
+    const npcSprite = this.physics.add.sprite(0, 0, 'npc').setFrame(0)
+    npcSprite.scale = 0.8
+    this.createCharacterAnimations('npc')
+
+    const npcClothingSprite = this.add.sprite(0, 0, 'npc_clothes').setFrame(0)
+    npcClothingSprite.setDepth(npcSprite.depth + 1)
+    npcClothingSprite.scale = 0.8
+    this.createClothesAnimations('npc_clothes')
+
+    const npcHairSprite = this.add.sprite(0, 0, 'npc_hair').setFrame(0)
+    npcHairSprite.setDepth(npcClothingSprite.depth + 1)
+    npcHairSprite.scale = 0.8
+    this.createClothesAnimations('npc_hair')
 
     this.cameras.main.startFollow(playerSprite, true)
     this.cameras.main.setZoom(3)
@@ -98,12 +121,29 @@ export default class GameScene extends Phaser.Scene {
           startPosition: { x: 30, y: 20 },
           speed: 4,
         },
+        {
+          id: 'npc',
+          sprite: npcSprite,
+          startPosition: { x: 30, y: 25 },
+          speed: 1,
+        },
+        {
+          id: 'npc_clothes',
+          sprite: npcClothingSprite,
+          startPosition: { x: 30, y: 25 },
+          speed: 1,
+        },
+        {
+          id: 'npc_hair',
+          sprite: npcHairSprite,
+          startPosition: { x: 30, y: 25 },
+          speed: 1,
+        },
       ],
     }
 
     this.layers = layers
     this.map = map
-    this.player = playerSprite
     this.gridEngine.create(map, gridEngineConfig)
   }
 
@@ -115,6 +155,8 @@ export default class GameScene extends Phaser.Scene {
     const hairSprite = this.gridEngine.getSprite('player_hair')
     hairSprite.setPosition(playerSprite.x, playerSprite.y)
 
+    this.updateNPC()
+    this.updatePlayerDepth({ id: 'npc' })
     this.updatePlayerDepth({ id: 'player' })
 
     if (!this.gridEngine.isMoving('player')) {
@@ -180,13 +222,13 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
-  createCharacterAnimations() {
+  createCharacterAnimations(sprite) {
     // Create walking animation for each row of sprite sheet. (8 columns and 4 rows)
     const directions = ['down', 'up', 'right', 'left']
     directions.forEach((dir, rowIndex) => {
       this.anims.create({
         key: `walk-${dir}`,
-        frames: this.anims.generateFrameNumbers('player', {
+        frames: this.anims.generateFrameNumbers(sprite, {
           start: rowIndex * 8,
           end: rowIndex * 8 + 7,
           first: rowIndex * 8,
@@ -214,31 +256,36 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
-  getStopFrame(direction) {
+  getStopFrame(direction, isPlayer) {
     switch (direction) {
       case 'up':
-        this.stopFrame = 8
+        this.playerStopFrame = 8
+        this.npcStopFrame = 8
         break
       case 'right':
-        this.stopFrame = 16
+        this.playerStopFrame = 16
+        this.npcStopFrame = 16
         break
       case 'down':
-        this.stopFrame = 0
+        this.playerStopFrame = 0
+        this.npcStopFrame = 0
         break
       case 'left':
-        this.stopFrame = 24
+        this.playerStopFrame = 24
+        this.npcStopFrame = 24
         break
       default:
         break
     }
-    return this.stopFrame
+    if (isPlayer) { return this.playerStopFrame }
+    return this.npcStopFrame
   }
 
   updatePlayerDepth(char) {
-    if (char.id === 'player') {
+    if (char.id) {
       const playerSprite = this.gridEngine.getSprite(char.id)
-      const clothingSprite = this.gridEngine.getSprite('player_clothes')
-      const hairSprite = this.gridEngine.getSprite('player_hair')
+      const clothingSprite = this.gridEngine.getSprite(`${char.id}_clothes`)
+      const hairSprite = this.gridEngine.getSprite(`${char.id}_hair`)
 
       const playerTile = this.map
         .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
@@ -255,6 +302,37 @@ export default class GameScene extends Phaser.Scene {
         clothingSprite.setDepth(8)
         hairSprite.setDepth(8)
       }
+    }
+  }
+
+  updateNPC() {
+    const npcSprite = this.gridEngine.getSprite('npc')
+    const npcClothingSprite = this.gridEngine.getSprite('npc_clothes')
+    const npcHairSprite = this.gridEngine.getSprite('npc_hair')
+
+    npcClothingSprite.setPosition(npcSprite.x, npcSprite.y)
+    npcHairSprite.setPosition(npcSprite.x, npcSprite.y)
+
+    // Add simple AI logic for the NPC here
+    this.gridEngine.moveRandomly('npc')
+
+    const direction = this.gridEngine.getFacingDirection('npc')
+
+    if (this.gridEngine.isMoving('npc')) {
+      this.gridEngine.move('npc', direction)
+      this.gridEngine.move('npc_clothes', direction)
+      this.gridEngine.move('npc_hair', direction)
+
+      npcSprite.anims.play(`walk-${direction}`, true)
+      npcClothingSprite.anims.play(`walk-${direction}-npc_clothes`, true)
+      npcHairSprite.anims.play(`walk-${direction}-npc_hair`, true)
+    } else {
+      npcSprite.anims.stop()
+      npcClothingSprite.anims.stop()
+      npcHairSprite.anims.stop()
+      npcSprite.setFrame(this.getStopFrame(direction, false))
+      npcClothingSprite.setFrame(this.getStopFrame(direction, false))
+      npcHairSprite.setFrame(this.getStopFrame(direction, false))
     }
   }
 }
