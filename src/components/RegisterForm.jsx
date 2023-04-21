@@ -11,7 +11,6 @@ function RegisterForm({ onRegister, onBackToLogin }) {
 
     // Auth service will take care of this, will remove later
     if (password !== confirmPassword) {
-      alert('Passwords do not match')
       return
     }
 
