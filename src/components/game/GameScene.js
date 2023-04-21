@@ -96,9 +96,9 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(playerSprite, true)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameras.main.setZoom(3)
-    this.physics.world.createDebugGraphic()
+    /* this.physics.world.createDebugGraphic()
     this.physics.world.drawDebug = true
-    npcSprite.setDebugBodyColor(0xff0000) // Draw NPC bounding box in red
+    npcSprite.setDebugBodyColor(0xff0000) // Draw NPC bounding box in red */
 
     layers.Collisions.setCollisionByProperty({ collides: true })
     this.physics.add.collider(playerSprite, layers.Collisions)
