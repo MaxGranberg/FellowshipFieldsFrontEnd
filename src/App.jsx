@@ -1,13 +1,24 @@
 import React, { useState } from 'react'
 import Game from './components/game/PhaserComponent'
 import LoginForm from './components/LoginForm'
+import RegisterForm from './components/RegisterForm'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
 
   const handleLogin = () => {
     setIsLoggedIn(true)
   }
+
+  const handleRegister = () => {
+    setIsRegistering(true)
+  }
+
+  const switchToLogin = () => {
+    setIsRegistering(false)
+  }
+
   return (
     <>
       <div className="header-container">
@@ -19,8 +30,11 @@ function App() {
         </div>
       ) : (
         <div className="login-container">
-          {/* Your LoginForm component */}
-          <LoginForm onLogin={handleLogin} />
+          {!isRegistering ? (
+            <LoginForm onLogin={handleLogin} onRegister={handleRegister} />
+          ) : (
+            <RegisterForm onRegister={switchToLogin} onBackToLogin={switchToLogin} />
+          )}
         </div>
       )}
     </>
