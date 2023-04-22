@@ -1,19 +1,42 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
+import AuthContext from './AuthContext'
 
-function LoginForm({ onLogin, onRegister }) {
+function LoginForm({ onRegister }) {
+  const { setIsAuthenticated, setToken } = useContext(AuthContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [flashMessage, setFlashMessage] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Perform your authentication logic here
-    // If authentication is successful, call the onLogin function
-    onLogin()
+    try {
+      const response = await fetch('http://localhost:8080/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        // Handle authentication error
+        setFlashMessage('Login failed. Please check your username and password.')
+        return
+      }
+
+      const { token } = await response.json()
+      setToken(token)
+      setIsAuthenticated(true)
+    } catch (error) {
+      // Handle request error
+      setFlashMessage('An error occurred. Please try again later.')
+    }
   }
 
   return (
     <form className="login-form" onSubmit={handleSubmit}>
+      {flashMessage && <div className="flash-message">{flashMessage}</div>}
       <input
         type="text"
         placeholder="Username"
@@ -35,7 +58,6 @@ function LoginForm({ onLogin, onRegister }) {
 }
 
 LoginForm.propTypes = {
-  onLogin: PropTypes.func.isRequired,
   onRegister: PropTypes.func.isRequired,
 }
 

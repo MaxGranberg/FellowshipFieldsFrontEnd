@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Game from './components/game/PhaserComponent'
 import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
+import AuthContext from './components/AuthContext'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
+  const [token, setToken] = useState(null)
 
   const handleLogin = () => {
     setIsLoggedIn(true)
@@ -19,8 +21,15 @@ function App() {
     setIsRegistering(false)
   }
 
+  const contextValue = useMemo(() => ({
+    isAuthenticated: isLoggedIn,
+    setIsAuthenticated: setIsLoggedIn,
+    token,
+    setToken,
+  }), [isLoggedIn, token])
+
   return (
-    <>
+    <AuthContext.Provider value={contextValue}>
       <div className="header-container">
         <h1 className="game-title">Fellowship Fields</h1>
       </div>
@@ -37,7 +46,7 @@ function App() {
           )}
         </div>
       )}
-    </>
+    </AuthContext.Provider>
   )
 }
 
