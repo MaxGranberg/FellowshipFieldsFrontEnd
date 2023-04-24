@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import AuthContext from './AuthContext'
 
-function LoginForm({ onRegister }) {
+function LoginForm({ onRegister, setGlobalFlashMessage }) {
   const { setIsAuthenticated, setToken } = useContext(AuthContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -28,6 +28,7 @@ function LoginForm({ onRegister }) {
       const { token } = await response.json()
       setToken(token)
       setIsAuthenticated(true)
+      setGlobalFlashMessage('Login successful!')
     } catch (error) {
       // Handle request error
       setFlashMessage('An error occurred. Please try again later.')
@@ -51,7 +52,9 @@ function LoginForm({ onRegister }) {
       />
       <div className="buttons-container">
         <button type="submit">Login</button>
-        <button type="button" onClick={onRegister}>Register</button>
+        <button type="button" onClick={onRegister}>
+          Register
+        </button>
       </div>
     </form>
   )
@@ -59,6 +62,7 @@ function LoginForm({ onRegister }) {
 
 LoginForm.propTypes = {
   onRegister: PropTypes.func.isRequired,
+  setGlobalFlashMessage: PropTypes.func.isRequired,
 }
 
 export default LoginForm
