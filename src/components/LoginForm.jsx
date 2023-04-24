@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import AuthContext from './AuthContext'
 
 function LoginForm({ onRegister, setGlobalFlashMessage }) {
-  const { setIsAuthenticated, setToken } = useContext(AuthContext)
+  const { setIsAuthenticated } = useContext(AuthContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [flashMessage, setFlashMessage] = useState('')
@@ -25,8 +25,6 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
         return
       }
 
-      const { token } = await response.json()
-      setToken(token)
       setIsAuthenticated(true)
       setGlobalFlashMessage('Login successful!')
     } catch (error) {

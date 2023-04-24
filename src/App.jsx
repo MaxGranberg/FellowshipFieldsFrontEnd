@@ -7,7 +7,6 @@ import AuthContext from './components/AuthContext'
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
-  const [token, setToken] = useState(null)
   const [flashMessage, setFlashMessage] = useState(null)
 
   useEffect(() => {
@@ -23,7 +22,22 @@ function App() {
   }
 
   const handleLogout = async () => {
-    setIsLoggedIn(false)
+    try {
+      const response = await fetch('http://localhost:8080/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        setIsLoggedIn(false)
+      } else {
+        setFlashMessage('An error occurred. Please try again later.')
+      }
+    } catch (error) {
+      setFlashMessage('An error occurred. Please try again later.')
+    }
   }
 
   const handleRegister = () => {
@@ -33,12 +47,11 @@ function App() {
   const switchToLogin = () => {
     setIsRegistering(false)
   }
+
   const contextValue = useMemo(() => ({
     isAuthenticated: isLoggedIn,
     setIsAuthenticated: setIsLoggedIn,
-    token,
-    setToken,
-  }), [isLoggedIn, token])
+  }), [isLoggedIn])
 
   return (
     <AuthContext.Provider value={contextValue}>

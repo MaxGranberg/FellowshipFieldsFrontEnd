@@ -1,5 +1,7 @@
 import React, {
-  createContext, useState, useMemo,
+  createContext,
+  useState,
+  useMemo,
 } from 'react'
 import PropTypes from 'prop-types'
 
@@ -7,7 +9,6 @@ const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [accessToken, setAccessToken] = useState(null)
 
   const logout = async () => {
     try {
@@ -20,17 +21,15 @@ export function AuthProvider({ children }) {
     }
 
     setIsAuthenticated(false)
-    setAccessToken(null)
   }
 
   const value = useMemo(
     () => ({
       isAuthenticated,
       setIsAuthenticated,
-      accessToken,
       logout,
     }),
-    [isAuthenticated, accessToken],
+    [isAuthenticated],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
