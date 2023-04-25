@@ -12,19 +12,21 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const logout = async () => {
-    const response = await fetch('http://localhost:8080/logout', {
+    const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/logout', {
       method: 'POST',
       credentials: 'include', // Make sure to include credentials in the request
     })
 
     if (response.ok) {
       setIsAuthenticated(false)
+      // Force a page reload, not best solution but for now i cant solve it any other way.
+      window.location.reload()
     }
   }
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const response = await fetch('http://localhost:8080/check-auth', {
+      const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/check-auth', {
         method: 'GET',
         credentials: 'include',
       })

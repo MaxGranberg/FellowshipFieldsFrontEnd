@@ -17,7 +17,7 @@ function RegisterForm({ onBackToLogin }) {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/register', {
+      const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

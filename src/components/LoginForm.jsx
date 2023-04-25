@@ -11,7 +11,7 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch('http://localhost:8080/login', {
+      const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
