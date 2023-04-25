@@ -17,6 +17,21 @@ function App() {
     return () => clearTimeout(timeout)
   }, [flashMessage])
 
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const response = await fetch('http://localhost:8080/check-auth', {
+        method: 'GET',
+        credentials: 'include',
+      })
+
+      if (response.ok) {
+        setIsLoggedIn(true)
+      }
+    }
+
+    checkAuthStatus()
+  }, [])
+
   const handleLogin = () => {
     setIsLoggedIn(true)
   }
