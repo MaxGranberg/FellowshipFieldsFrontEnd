@@ -2,6 +2,7 @@ import React, {
   createContext,
   useState,
   useMemo,
+  useEffect,
 } from 'react'
 import PropTypes from 'prop-types'
 
@@ -11,17 +12,30 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const logout = async () => {
-    try {
-      await fetch('http://localhost:8080/logout', {
-        method: 'POST',
-        credentials: 'include', // Make sure to include credentials in the request
+    const response = await fetch('http://localhost:8080/logout', {
+      method: 'POST',
+      credentials: 'include', // Make sure to include credentials in the request
+    })
+
+    if (response.ok) {
+      setIsAuthenticated(false)
+    }
+  }
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const response = await fetch('http://localhost:8080/check-auth', {
+        method: 'GET',
+        credentials: 'include',
       })
-    } catch (error) {
-      return
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+      }
     }
 
-    setIsAuthenticated(false)
-  }
+    checkAuthStatus()
+  }, [])
 
   const value = useMemo(
     () => ({
