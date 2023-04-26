@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import PropTypes, { number } from 'prop-types'
+import PropTypes from 'prop-types'
 
 function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
   const [username, setUsername] = useState('')
@@ -26,7 +26,7 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
       return
     }
 
-    if (username.charAt(0) === number) {
+    if (/^\d/.test(username)) {
       setFlashMessage('Username cant have a number as the first character')
     }
 
