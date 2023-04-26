@@ -26,7 +26,7 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
       return
     }
 
-    if (username[0] === number) {
+    if (username.charAt(0) === number) {
       setFlashMessage('Username cant have a number as the first character')
     }
 
@@ -61,17 +61,20 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
         type="text"
         placeholder="Username"
         value={username}
+        required
         onChange={(e) => setUsername(e.target.value)}
       />
       <input
         type="password"
         placeholder="Password"
+        required
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
       <input
         type="password"
         placeholder="Confirm Password"
+        required
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
       />
