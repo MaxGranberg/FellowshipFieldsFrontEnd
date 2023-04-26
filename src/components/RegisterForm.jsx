@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
+function RegisterForm({ onBackToLogin, setGlobalFlashMessage, globalFlashMessage }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -49,7 +49,7 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {flashMessage && <div className="flash-message">{flashMessage}</div>}
+      {flashMessage && !globalFlashMessage && (<div className="flash-message">{flashMessage}</div>)}
       <input
         type="text"
         placeholder="Username"
@@ -77,6 +77,11 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
 RegisterForm.propTypes = {
   onBackToLogin: PropTypes.func.isRequired,
   setGlobalFlashMessage: PropTypes.func.isRequired,
+  globalFlashMessage: PropTypes.string,
+}
+
+RegisterForm.defaultProps = {
+  globalFlashMessage: null,
 }
 
 export default RegisterForm
