@@ -49,7 +49,6 @@ function App() {
         </div>
       ) : (
         <div className="login-container">
-          {flashMessage && <div className="flash-message">{flashMessage}</div>}
           {!isRegistering ? (
             <LoginForm
               onLogin={handleLogin}
@@ -61,7 +60,6 @@ function App() {
               onRegister={switchToLogin}
               onBackToLogin={switchToLogin}
               setGlobalFlashMessage={setFlashMessage}
-              globalFlashMessage={flashMessage}
             />
           )}
         </div>

@@ -1,24 +1,18 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-function RegisterForm({ onBackToLogin }) {
+function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [flashMessageType, setFlashMessageType] = useState('')
-  const [flashMessageContent, setFlashMessageContent] = useState('')
-
-  const setFlashMessage = (message, type = 'error') => {
-    setFlashMessageType(type)
-    setFlashMessageContent(message)
-  }
+  const [flashMessage, setFlashMessage] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     // Check if passwords match
     if (password !== confirmPassword) {
-      setFlashMessage('Passwords do not match.', 'error')
+      setFlashMessage('Passwords do not match.')
       return
     }
 
@@ -40,13 +34,13 @@ function RegisterForm({ onBackToLogin }) {
         const messageMatch = errorMessage.match(/User validation failed: .*?:\s*(.*)/)
         const extractedMessage = messageMatch ? messageMatch[1] : errorMessage
 
-        setFlashMessage(extractedMessage, 'error')
+        setFlashMessage(extractedMessage)
         return
       }
 
       // Registration was successful, navigate back to login form
       onBackToLogin()
-      setFlashMessage('Registration successful, you can now login!', 'success')
+      setGlobalFlashMessage('Registration successful, you can now login!')
     } catch (error) {
       // Handle request error
       setFlashMessage('An error occurred. Please try again later.')
@@ -55,13 +49,7 @@ function RegisterForm({ onBackToLogin }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {flashMessageContent && (
-        <div
-          className={`flash-message${flashMessageType === 'success' ? '-success' : ''}`}
-        >
-          {flashMessageContent}
-        </div>
-      )}
+      {flashMessage && <div className="flash-message">{flashMessage}</div>}
       <input
         type="text"
         placeholder="Username"
@@ -88,6 +76,7 @@ function RegisterForm({ onBackToLogin }) {
 
 RegisterForm.propTypes = {
   onBackToLogin: PropTypes.func.isRequired,
+  setGlobalFlashMessage: PropTypes.func.isRequired,
 }
 
 export default RegisterForm
