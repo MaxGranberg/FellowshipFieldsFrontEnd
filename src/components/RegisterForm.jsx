@@ -41,8 +41,9 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
       })
 
       if (!response.ok) {
-        // Handle registration error
-        setFlashMessage('Registration failed. An unknown error occurred.')
+        // Handle registration error, error most likely to be not a unique username.
+        // My custom errors from server is not being sent after deploying on Heroku.
+        setFlashMessage('Registration failed. Try another username.')
         return
       }
 
