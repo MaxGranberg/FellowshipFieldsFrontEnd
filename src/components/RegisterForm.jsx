@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
+import PropTypes, { number } from 'prop-types'
 
 function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
   const [username, setUsername] = useState('')
@@ -16,6 +16,20 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
       return
     }
 
+    if (password.length < 10) {
+      setFlashMessage('Password needs to be 10 characters or more.')
+      return
+    }
+
+    if (username.length < 3) {
+      setFlashMessage('Username needs to be 3 characters or more')
+      return
+    }
+
+    if (username[0] === number) {
+      setFlashMessage('Username cant have a number as the first character')
+    }
+
     try {
       const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/register', {
         method: 'POST',
@@ -27,17 +41,7 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
 
       if (!response.ok) {
         // Handle registration error
-        const errorData = await response.json()
-        console.log(errorData)
-        /* const errorMessage = (errorData.cause && errorData.cause.message)
-         ? errorData.cause.message.replace(', password:', '') :
-         'Registration failed. An unknown error occurred.'
-
-        // Extract the relevant part of the error message
-        const messageMatch = errorMessage.match(/User validation failed: .*?:\s*(.*)/)
-        const extractedMessage = messageMatch ? messageMatch[1] : errorMessage
- */
-        setFlashMessage(errorData)
+        setFlashMessage('Registration failed. An unknown error occurred.')
         return
       }
 
