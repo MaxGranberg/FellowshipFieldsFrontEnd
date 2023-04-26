@@ -28,6 +28,7 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
 
     if (/^\d/.test(username)) {
       setFlashMessage('Username cant have a number as the first character')
+      return
     }
 
     try {
