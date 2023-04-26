@@ -28,7 +28,9 @@ function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
       if (!response.ok) {
         // Handle registration error
         const errorData = await response.json()
-        /* const errorMessage = (errorData.cause && errorData.cause.message) ? errorData.cause.message.replace(', password:', '') : 'Registration failed. An unknown error occurred.'
+        /* const errorMessage = (errorData.cause && errorData.cause.message)
+         ? errorData.cause.message.replace(', password:', '') :
+         'Registration failed. An unknown error occurred.'
 
         // Extract the relevant part of the error message
         const messageMatch = errorMessage.match(/User validation failed: .*?:\s*(.*)/)
