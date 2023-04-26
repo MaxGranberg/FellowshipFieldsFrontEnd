@@ -57,7 +57,11 @@ function App() {
               setGlobalFlashMessage={setFlashMessage}
             />
           ) : (
-            <RegisterForm onRegister={switchToLogin} onBackToLogin={switchToLogin} />
+            <RegisterForm
+              onRegister={switchToLogin}
+              onBackToLogin={switchToLogin}
+              setGlobalFlashMessage={setFlashMessage}
+            />
           )}
         </div>
       )}

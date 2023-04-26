@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-function RegisterForm({ onBackToLogin }) {
+function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -40,6 +40,7 @@ function RegisterForm({ onBackToLogin }) {
 
       // Registration was successful, navigate back to login form
       onBackToLogin()
+      setGlobalFlashMessage('Registration successful, you can now login!')
     } catch (error) {
       // Handle request error
       setFlashMessage('An error occurred. Please try again later.')
@@ -75,6 +76,7 @@ function RegisterForm({ onBackToLogin }) {
 
 RegisterForm.propTypes = {
   onBackToLogin: PropTypes.func.isRequired,
+  setGlobalFlashMessage: PropTypes.func.isRequired,
 }
 
 export default RegisterForm
