@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import socket from '../socket'
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -7,6 +8,8 @@ export default class GameScene extends Phaser.Scene {
     this.treeContainer = null
     this.playerStopFrame = null
     this.npcStopFrame = null
+    this.playerId = socket.id
+    this.otherPlayers = {}
   }
 
   preload() {
@@ -148,6 +151,43 @@ export default class GameScene extends Phaser.Scene {
     this.layers = layers
     this.map = map
     this.gridEngine.create(map, gridEngineConfig)
+
+    // Emit player's initial position
+    socket.emit('playerCreated', { x: 30, y: 20, playerId: this.playerId })
+
+    socket.on('currentPlayers', (players) => {
+      Object.keys(players).forEach((playerId) => {
+        if (playerId !== this.playerId) {
+          this.createOtherPlayer(players[playerId])
+        }
+      })
+    })
+
+    socket.on('playerJoined', (playerInfo) => {
+      this.createOtherPlayer(playerInfo)
+    })
+
+    socket.on('playerLeft', (playerId) => {
+      this.removeOtherPlayer(playerId)
+    })
+
+    socket.on('playerMoved', (playerInfo) => {
+      if (playerInfo.playerId === this.playerId) {
+        return
+      }
+
+      if (!this.otherPlayers[playerInfo.playerId]) {
+        this.createOtherPlayer(playerInfo)
+      } else {
+        const otherPlayer = this.otherPlayers[playerInfo.playerId]
+        otherPlayer.sprite.x = playerInfo.x
+        otherPlayer.sprite.y = playerInfo.y
+
+        otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
+        otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
+        otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
+      }
+    })
   }
 
   update() {
@@ -211,6 +251,12 @@ export default class GameScene extends Phaser.Scene {
         clothingSprite.setFrame(this.getStopFrame(this.playerDirection, true))
         hairSprite.setFrame(this.getStopFrame(this.playerDirection, true))
       }
+      socket.emit('playerMoved', {
+        x: playerSprite.x,
+        y: playerSprite.y,
+        playerId: this.playerId,
+        direction: this.playerDirection,
+      })
     }
 
     Object.values(this.treeSprites).forEach((treeSprite) => {
@@ -334,6 +380,58 @@ export default class GameScene extends Phaser.Scene {
       npcSprite.setFrame(this.getStopFrame(direction, false))
       npcClothingSprite.setFrame(this.getStopFrame(direction, false))
       npcHairSprite.setFrame(this.getStopFrame(direction, false))
+    }
+  }
+
+  createOtherPlayer(playerInfo) {
+    const otherPlayer = {
+      sprite: this.physics.add.sprite(playerInfo.x, playerInfo.y, 'player').setFrame(0),
+      clothingSprite: this.add.sprite(playerInfo.x, playerInfo.y, 'player_clothes').setFrame(0),
+      hairSprite: this.add.sprite(playerInfo.x, playerInfo.y, 'player_hair').setFrame(0),
+    }
+
+    otherPlayer.sprite.scale = 0.8
+    otherPlayer.clothingSprite.scale = 0.8
+    otherPlayer.hairSprite.scale = 0.8
+
+    otherPlayer.clothingSprite.setDepth(otherPlayer.sprite.depth + 1)
+    otherPlayer.hairSprite.setDepth(otherPlayer.clothingSprite.depth + 1)
+
+    this.createCharacterAnimations('player')
+    this.createClothesAnimations('player_clothes')
+    this.createClothesAnimations('player_hair')
+
+    this.otherPlayers[playerInfo.playerId] = otherPlayer
+  }
+
+  removeOtherPlayer(playerId) {
+    if (this.otherPlayers[playerId]) {
+      this.otherPlayers[playerId].sprite.destroy()
+      this.otherPlayers[playerId].clothingSprite.destroy()
+      this.otherPlayers[playerId].hairSprite.destroy()
+      delete this.otherPlayers[playerId]
+    }
+  }
+
+  handlePlayerMoved(playerInfo) {
+    if (playerInfo.playerId === this.playerId) {
+      return
+    }
+
+    if (!this.otherPlayers[playerInfo.playerId]) {
+      this.createOtherPlayer(playerInfo)
+    } else {
+      const otherPlayer = this.otherPlayers[playerInfo.playerId]
+      otherPlayer.sprite.x = playerInfo.x
+      otherPlayer.sprite.y = playerInfo.y
+      otherPlayer.clothingSprite.x = playerInfo.x
+      otherPlayer.clothingSprite.y = playerInfo.y
+      otherPlayer.hairSprite.x = playerInfo.x
+      otherPlayer.hairSprite.y = playerInfo.y
+
+      otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
+      otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
+      otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
     }
   }
 }

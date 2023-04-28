@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import AuthContext from './AuthContext'
+import socket from './socket'
 
 function LoginForm({ onRegister, setGlobalFlashMessage }) {
   const { setIsAuthenticated } = useContext(AuthContext)
@@ -28,6 +29,7 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
 
       setIsAuthenticated(true)
       setGlobalFlashMessage('Login successful!')
+      socket.emit('setUsername', username)
     } catch (error) {
       // Handle request error
       setFlashMessage('An error occurred. Please try again later.')
