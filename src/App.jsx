@@ -24,7 +24,9 @@ function App() {
     }) */
 
     socket.on('playerMoved', (playerData) => {
-      gameRef.current.handlePlayerMoved(playerData)
+      if (gameRef.current) {
+        gameRef.current.handlePlayerMoved(playerData)
+      }
     })
 
     // Stäng anslutningen när komponenten demonteras

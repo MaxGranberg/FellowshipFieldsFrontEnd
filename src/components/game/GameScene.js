@@ -153,18 +153,20 @@ export default class GameScene extends Phaser.Scene {
     this.gridEngine.create(map, gridEngineConfig)
 
     // Emit player's initial position
-    socket.emit('playerCreated', { x: 30, y: 20, playerId: this.playerId })
+    socket.emit('playerCreated', {
+      x: 30, y: 20, playerId: this.playerId, direction: 'down',
+    })
 
     socket.on('currentPlayers', (players) => {
       Object.keys(players).forEach((playerId) => {
         if (playerId !== this.playerId) {
-          this.createOtherPlayer(players[playerId])
+          this.createOtherPlayer(players[playerId], 'player', 'player_clothes', 'player_hair')
         }
       })
     })
 
     socket.on('playerJoined', (playerInfo) => {
-      this.createOtherPlayer(playerInfo)
+      this.createOtherPlayer(playerInfo, 'player', 'player_clothes', 'player_hair')
     })
 
     socket.on('playerLeft', (playerId) => {
@@ -180,12 +182,31 @@ export default class GameScene extends Phaser.Scene {
         this.createOtherPlayer(playerInfo)
       } else {
         const otherPlayer = this.otherPlayers[playerInfo.playerId]
-        otherPlayer.sprite.x = playerInfo.x
-        otherPlayer.sprite.y = playerInfo.y
 
-        otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
-        otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
-        otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
+        // Create a tween for the smooth movement
+        this.tweens.add({
+          targets: [otherPlayer.sprite, otherPlayer.clothingSprite, otherPlayer.hairSprite],
+          x: playerInfo.x,
+          y: playerInfo.y,
+          duration: 550, // Change this value to adjust the tween's duration
+          ease: 'linear',
+          onUpdate: () => {
+            this.updatePlayerDepth({ id: 'player', playerId: playerInfo.playerId })
+          },
+        })
+
+        if (playerInfo.moving) {
+          otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
+          otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
+          otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
+        } else {
+          otherPlayer.sprite.anims.stop()
+          otherPlayer.clothingSprite.anims.stop()
+          otherPlayer.hairSprite.anims.stop()
+          otherPlayer.sprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+          otherPlayer.clothingSprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+          otherPlayer.hairSprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+        }
       }
     })
   }
@@ -256,6 +277,8 @@ export default class GameScene extends Phaser.Scene {
         y: playerSprite.y,
         playerId: this.playerId,
         direction: this.playerDirection,
+        moving: cursors.left.isDown || cursors.right.isDown
+        || cursors.up.isDown || cursors.down.isDown,
       })
     }
 
@@ -332,9 +355,11 @@ export default class GameScene extends Phaser.Scene {
 
   updatePlayerDepth(char) {
     if (char.id) {
-      const playerSprite = this.gridEngine.getSprite(char.id)
-      const clothingSprite = this.gridEngine.getSprite(`${char.id}_clothes`)
-      const hairSprite = this.gridEngine.getSprite(`${char.id}_hair`)
+      const spriteIdPrefix = char.id
+
+      const playerSprite = this.gridEngine.getSprite(spriteIdPrefix)
+      const clothingSprite = this.gridEngine.getSprite(`${spriteIdPrefix}_clothes`)
+      const hairSprite = this.gridEngine.getSprite(`${spriteIdPrefix}_hair`)
 
       const playerTile = this.map
         .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
@@ -383,25 +408,43 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  createOtherPlayer(playerInfo) {
-    const otherPlayer = {
-      sprite: this.physics.add.sprite(playerInfo.x, playerInfo.y, 'player').setFrame(0),
-      clothingSprite: this.add.sprite(playerInfo.x, playerInfo.y, 'player_clothes').setFrame(0),
-      hairSprite: this.add.sprite(playerInfo.x, playerInfo.y, 'player_hair').setFrame(0),
+  createOtherPlayer(playerInfo, characterSpriteKey, clothesSpriteKey, hairSpriteKey) {
+    const otherPlayerSprite = this.physics.add
+      .sprite(playerInfo.x, playerInfo.y, characterSpriteKey)
+      .setFrame(0)
+    otherPlayerSprite.setDepth(10)
+    otherPlayerSprite.scale = 0.8
+
+    otherPlayerSprite.anims.load('walk-up')
+    otherPlayerSprite.anims.load('walk-down')
+    otherPlayerSprite.anims.load('walk-left')
+    otherPlayerSprite.anims.load('walk-right')
+
+    const otherPlayerClothingSprite = this.add.sprite(playerInfo.x, playerInfo.y, clothesSpriteKey)
+      .setFrame(0)
+    otherPlayerClothingSprite.setDepth(otherPlayerSprite.depth + 1)
+    otherPlayerClothingSprite.scale = 0.8
+
+    otherPlayerClothingSprite.anims.load('walk-up-player_clothes')
+    otherPlayerClothingSprite.anims.load('walk-down-player_clothes')
+    otherPlayerClothingSprite.anims.load('walk-left-player_clothes')
+    otherPlayerClothingSprite.anims.load('walk-right-player_clothes')
+
+    const otherPlayerHairSprite = this.add.sprite(playerInfo.x, playerInfo.y, hairSpriteKey)
+      .setFrame(0)
+    otherPlayerHairSprite.setDepth(otherPlayerClothingSprite.depth + 1)
+    otherPlayerHairSprite.scale = 0.8
+
+    otherPlayerHairSprite.anims.load('walk-up-player_hair')
+    otherPlayerHairSprite.anims.load('walk-down-player_hair')
+    otherPlayerHairSprite.anims.load('walk-left-player_hair')
+    otherPlayerHairSprite.anims.load('walk-right-player_hair')
+
+    this.otherPlayers[playerInfo.playerId] = {
+      sprite: otherPlayerSprite,
+      clothingSprite: otherPlayerClothingSprite,
+      hairSprite: otherPlayerHairSprite,
     }
-
-    otherPlayer.sprite.scale = 0.8
-    otherPlayer.clothingSprite.scale = 0.8
-    otherPlayer.hairSprite.scale = 0.8
-
-    otherPlayer.clothingSprite.setDepth(otherPlayer.sprite.depth + 1)
-    otherPlayer.hairSprite.setDepth(otherPlayer.clothingSprite.depth + 1)
-
-    this.createCharacterAnimations('player')
-    this.createClothesAnimations('player_clothes')
-    this.createClothesAnimations('player_hair')
-
-    this.otherPlayers[playerInfo.playerId] = otherPlayer
   }
 
   removeOtherPlayer(playerId) {
@@ -429,9 +472,18 @@ export default class GameScene extends Phaser.Scene {
       otherPlayer.hairSprite.x = playerInfo.x
       otherPlayer.hairSprite.y = playerInfo.y
 
-      otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
-      otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
-      otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
+      if (playerInfo.moving) {
+        otherPlayer.sprite.anims.play(`walk-${playerInfo.direction}`, true)
+        otherPlayer.clothingSprite.anims.play(`walk-${playerInfo.direction}-player_clothes`, true)
+        otherPlayer.hairSprite.anims.play(`walk-${playerInfo.direction}-player_hair`, true)
+      } else {
+        otherPlayer.sprite.anims.stop()
+        otherPlayer.clothingSprite.anims.stop()
+        otherPlayer.hairSprite.anims.stop()
+        otherPlayer.sprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+        otherPlayer.clothingSprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+        otherPlayer.hairSprite.setFrame(this.getStopFrame(playerInfo.direction, true))
+      }
     }
   }
 }
