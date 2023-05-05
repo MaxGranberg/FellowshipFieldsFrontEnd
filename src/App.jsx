@@ -6,6 +6,7 @@ import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
 import AuthContext from './components/AuthContext'
 import socket from './components/socket'
+import Chat from './components/chat/Chat'
 
 function App() {
   const gameRef = useRef()
@@ -67,8 +68,11 @@ function App() {
       </div>
       {flashMessage && <div className="flash-message-success">{flashMessage}</div>}
       {isAuthenticated ? (
-        <div className="game-container">
-          <Game ref={gameRef} />
+        <div className="game-and-chat-wrapper">
+          <div className="game-container">
+            <Game ref={gameRef} />
+          </div>
+          <Chat />
         </div>
       ) : (
         <div className="login-container">
