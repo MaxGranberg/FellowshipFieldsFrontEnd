@@ -23,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
     this.createCharacters()
     this.createCameraController(map)
     this.createPhysicsCollisions(layers)
-    this.createGridEngine(map, layers)
+    this.createGridEngine(map)
     this.handleSocketEvents()
   }
 
@@ -168,16 +168,16 @@ export default class GameScene extends Phaser.Scene {
     socket.on('currentPlayers', (players) => {
       Object.keys(players).forEach((playerId) => {
         if (playerId !== this.playerId) {
-          this.createOtherPlayer(players[playerId], 'player', 'player_clothes', 'player_hair')
+          this.createOtherPlayer(players[playerId], playerId)
         }
       })
     })
 
     socket.on('playerJoined', (playerInfo) => {
-      this.createOtherPlayer(playerInfo, 'player', 'player_clothes', 'player_hair')
+      this.createOtherPlayer(playerInfo, playerInfo.playerId)
     })
 
-    socket.on('playerLeft', (playerId) => {
+    socket.on('playerDisconnected', (playerId) => {
       this.removeOtherPlayer(playerId)
     })
 
@@ -187,7 +187,7 @@ export default class GameScene extends Phaser.Scene {
       }
 
       if (!this.otherPlayers[playerInfo.playerId]) {
-        this.createOtherPlayer(playerInfo, 'player', 'player_clothes', 'player_hair')
+        this.createOtherPlayer(playerInfo, playerInfo.playerId)
       } else {
         const otherPlayer = this.otherPlayers[playerInfo.playerId]
 
@@ -196,7 +196,7 @@ export default class GameScene extends Phaser.Scene {
           targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
           x: playerInfo.x,
           y: playerInfo.y,
-          duration: 550, // Change this value to adjust the tween's duration
+          duration: 300, // Change this value to adjust the tween's duration
           ease: 'linear',
           onUpdate: () => {
             this.updatePlayerDepth(this.otherPlayers[playerInfo.playerId])
@@ -311,7 +311,7 @@ export default class GameScene extends Phaser.Scene {
     this.npc.updateAnimation(direction, isMoving)
   }
 
-  createOtherPlayer(playerInfo) {
+  createOtherPlayer(playerInfo, playerId) {
     const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair')
 
     otherPlayer.sprite.setPosition(playerInfo.x, playerInfo.y)
@@ -320,13 +320,21 @@ export default class GameScene extends Phaser.Scene {
 
     // Add the new character instance to the otherPlayers object
     this.otherPlayers[playerInfo.playerId] = otherPlayer
+
+    // Add the other player to the gridEngine config
+    this.createGridEngineOtherPlayer(playerId)
   }
 
   removeOtherPlayer(playerId) {
     if (this.otherPlayers[playerId]) {
       this.otherPlayers[playerId].sprite.destroy()
-      this.otherPlayers[playerId].clothingSprite.destroy()
+      this.otherPlayers[playerId].clothesSprite.destroy()
       this.otherPlayers[playerId].hairSprite.destroy()
+
+      // Remove characters from the gridEngine
+      this.gridEngine.removeCharacter(this.otherPlayers[playerId])
+      this.gridEngine.removeCharacter(`${this.otherPlayers[playerId]}_clothes`)
+      this.gridEngine.removeCharacter(`${this.otherPlayers[playerId]}_hair`)
       delete this.otherPlayers[playerId]
     }
   }
@@ -337,7 +345,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     if (!this.otherPlayers[playerInfo.playerId]) {
-      this.createOtherPlayer(playerInfo, 'player', 'player_clothes', 'player_hair')
+      this.createOtherPlayer(playerInfo, playerInfo.playerId)
     } else {
       const otherPlayer = this.otherPlayers[playerInfo.playerId]
       otherPlayer.sprite.x = playerInfo.x
@@ -349,5 +357,35 @@ export default class GameScene extends Phaser.Scene {
         otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
       }
     }
+  }
+
+  createGridEngineOtherPlayer(playerId) {
+    // console.log(playerId):  ltYEfF48W86bChH7AAAz
+    const gridEngineOtherPlayerConfig = {
+      id: playerId, // 'player' eller en ny sprite kanske
+      sprite: this.otherPlayers[playerId].sprite,
+      startPosition: { x: 30, y: 20 },
+      speed: 4,
+    }
+
+    this.gridEngine.addCharacter(gridEngineOtherPlayerConfig)
+
+    const gridEngineOtherPlayerClothesConfig = {
+      id: `${playerId}_clothes`,
+      sprite: this.otherPlayers[playerId].clothesSprite,
+      startPosition: { x: 30, y: 20 },
+      speed: 4,
+    }
+
+    this.gridEngine.addCharacter(gridEngineOtherPlayerClothesConfig)
+
+    const gridEngineOtherPlayerHairConfig = {
+      id: `${playerId}_hair`,
+      sprite: this.otherPlayers[playerId].hairSprite,
+      startPosition: { x: 30, y: 20 },
+      speed: 4,
+    }
+
+    this.gridEngine.addCharacter(gridEngineOtherPlayerHairConfig)
   }
 }
