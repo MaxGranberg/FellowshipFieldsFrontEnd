@@ -1,3 +1,5 @@
+import ChatBubble from '../chat/ChatBubble'
+
 class Character {
   constructor(scene, spriteKey, clothesKey, hairKey) {
     this.scene = scene
@@ -10,6 +12,7 @@ class Character {
     this.hairSprite = this.createAccessorySprite(this.hairKey, this.sprite)
 
     this.stopFrame = 0
+    this.chatBubble = new ChatBubble(scene, this)
 
     // Create animations for each sprite
     this.createAnimations(this.spriteKey)
@@ -82,6 +85,10 @@ class Character {
         break
     }
     return this.stopFrame
+  }
+
+  say(message) {
+    this.chatBubble.showMessage(message)
   }
 }
 export default Character

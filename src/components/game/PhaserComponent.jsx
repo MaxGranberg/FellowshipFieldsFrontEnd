@@ -1,7 +1,7 @@
 import React, {
   useEffect,
   useRef,
-  useState, forwardRef, useImperativeHandle,
+  useState, forwardRef, useImperativeHandle, useCallback,
 } from 'react'
 import Phaser from 'phaser'
 import { GridEngine } from 'grid-engine'
@@ -23,14 +23,17 @@ const PhaserGame = forwardRef((props, ref) => {
     }
   }
 
-  /* const handleChatMessage = (message) => {
-    // console.log('Received chat message:', message)
+  const handleChatMessage = useCallback((message) => {
     // Update the game scene with the new chat message
-  } */
+    if (game) {
+      const gameScene = game.scene.getScene('GameScene')
+      gameScene.handleChatMessage(message)
+    }
+  }, [game])
 
   useImperativeHandle(ref, () => ({
     handlePlayerMoved,
-    // handleChatMessage,
+    handleChatMessage,
   }))
 
   useEffect(() => {
@@ -82,12 +85,17 @@ const PhaserGame = forwardRef((props, ref) => {
         return updatedPlayers
       })
     })
+
+    socket.on('chatMessage', (message) => {
+      handleChatMessage(message)
+    })
     return () => {
       socket.off('players')
       socket.off('playerMoved')
       socket.off('playerDisconnected')
+      socket.off('chatMessage')
     }
-  }, [])
+  }, [handleChatMessage])
 
   return <div ref={gameRef} />
 })

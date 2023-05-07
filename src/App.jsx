@@ -19,11 +19,6 @@ function App() {
     // Anslut till servern när komponenten monteras
     socket.connect()
 
-    /* socket.on('chatMessage', (message) => {
-      console.log('Received chat message:', message)
-      gameRef.current.handleChatMessage(message)
-    }) */
-
     socket.on('playerMoved', (playerData) => {
       if (gameRef.current) {
         gameRef.current.handlePlayerMoved(playerData)

@@ -181,6 +181,10 @@ export default class GameScene extends Phaser.Scene {
       this.removeOtherPlayer(playerId)
     })
 
+    socket.on('chatMessage', (messageData) => {
+      this.handleChatMessage(messageData)
+    })
+
     socket.on('playerMoved', (playerInfo) => {
       if (playerInfo.playerId === this.playerId) {
         return
@@ -209,6 +213,7 @@ export default class GameScene extends Phaser.Scene {
 
   updateCharacterMovements() {
     const cursors = this.input.keyboard.createCursorKeys()
+    this.input.keyboard.clearCaptures()
     const playerSprite = this.player.sprite
 
     this.player.clothesSprite.setPosition(playerSprite.x, playerSprite.y)
@@ -387,5 +392,14 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.gridEngine.addCharacter(gridEngineOtherPlayerHairConfig)
+  }
+
+  handleChatMessage(messageData) {
+    const { playerId, message } = messageData
+    if (playerId === this.playerId) {
+      this.player.say(message)
+    } else if (this.otherPlayers[playerId]) {
+      this.otherPlayers[playerId].say(message)
+    }
   }
 }

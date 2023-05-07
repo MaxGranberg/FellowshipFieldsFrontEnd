@@ -22,7 +22,6 @@ function Chat() {
     socket.emit('chatMessage', inputMessage)
     setInputMessage('')
   }
-
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       sendMessage()
@@ -41,10 +40,11 @@ function Chat() {
       <div className="chat-input">
         <input
           type="text"
+          placeholder="Type your message here..."
+          required
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Type your message here..."
         />
         <button type="button" onClick={sendMessage}>
           Send
