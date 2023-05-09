@@ -11,27 +11,29 @@ class ChatBubble {
     if (this.bubble) {
       this.bubble.destroy()
       this.text.destroy()
+      this.container.destroy()
     }
 
     this.bubble = this.scene.add.graphics()
-    this.text = this.scene.add.text(0, 0, message, { fontSize: '14px', fontFamily: 'Arial', color: '#000000' })
-
-    this.text.setPosition(
-      this.character.sprite.x - 1,
-      this.character.sprite.y - 1,
-    )
-
-    this.text.setScale(1 / this.scene.cameras.main.zoom)
+    this.text = this.scene.add.text(0, 0, message, {
+      fontSize: '14px', fontFamily: 'Arial', color: '#000000', padding: { x: 5, y: 3 },
+    })
 
     this.bubble.fillStyle(0xffffff, 1)
     this.bubble.fillRoundedRect(
-      this.text.x - 5,
-      this.text.y - 5,
+      0,
+      0,
       this.text.width,
       this.text.height,
       5,
     )
 
+    // Create a container for the bubble and text
+    this.container = this.scene.add.container(0, 0, [this.bubble, this.text])
+    this.container.setPosition(this.character.sprite.x - 1, this.character.sprite.y - 1)
+    this.container.setScale(1 / this.scene.cameras.main.zoom)
+
+    this.container.setDepth(14)
     this.bubble.setDepth(14)
     this.text.setDepth(15)
 
@@ -48,6 +50,7 @@ class ChatBubble {
     if (this.bubble) {
       this.bubble.destroy()
       this.text.destroy()
+      this.container.destroy()
     }
 
     if (this.timeout) {
