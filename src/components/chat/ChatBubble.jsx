@@ -58,5 +58,11 @@ class ChatBubble {
       this.timeout = null
     }
   }
+
+  update() {
+    if (this.container) {
+      this.container.setPosition(this.character.sprite.x - 1, this.character.sprite.y - 1)
+    }
+  }
 }
 export default ChatBubble

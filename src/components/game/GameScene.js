@@ -220,6 +220,10 @@ export default class GameScene extends Phaser.Scene {
     this.player.hairSprite.setPosition(playerSprite.x, playerSprite.y)
 
     this.updateNPC()
+    this.player.update() // Chatbubble update to follow the players when moving
+    Object.values(this.otherPlayers).forEach((otherPlayer) => {
+      otherPlayer.update()
+    })
 
     const isMoving = cursors.left.isDown || cursors.right.isDown
       || cursors.up.isDown || cursors.down.isDown

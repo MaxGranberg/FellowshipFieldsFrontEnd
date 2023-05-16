@@ -90,5 +90,9 @@ class Character {
   say(message) {
     this.chatBubble.showMessage(message)
   }
+
+  update() {
+    this.chatBubble.update()
+  }
 }
 export default Character
