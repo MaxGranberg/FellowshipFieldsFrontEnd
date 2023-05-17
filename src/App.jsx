@@ -13,7 +13,9 @@ function App() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [flashMessage, setFlashMessage] = useState(null)
 
-  const { isAuthenticated, setIsAuthenticated, logout } = useContext(AuthContext)
+  const {
+    isAuthenticated, setIsAuthenticated, logout, username,
+  } = useContext(AuthContext)
 
   useEffect(() => {
     // Anslut till servern när komponenten monteras
@@ -65,7 +67,7 @@ function App() {
       {isAuthenticated ? (
         <div className="game-and-chat-wrapper">
           <div className="game-container">
-            <Game ref={gameRef} />
+            <Game ref={gameRef} username={username} />
           </div>
           <Chat />
         </div>

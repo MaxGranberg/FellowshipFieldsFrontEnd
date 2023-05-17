@@ -1,11 +1,12 @@
 import ChatBubble from '../chat/ChatBubble'
 
 class Character {
-  constructor(scene, spriteKey, clothesKey, hairKey) {
+  constructor(scene, spriteKey, clothesKey, hairKey, username) {
     this.scene = scene
     this.spriteKey = spriteKey
     this.clothesKey = clothesKey
     this.hairKey = hairKey
+    this.username = username
 
     this.sprite = this.createSprite(this.spriteKey)
     this.clothesSprite = this.createAccessorySprite(this.clothesKey, this.sprite)
@@ -13,6 +14,7 @@ class Character {
 
     this.stopFrame = 0
     this.chatBubble = new ChatBubble(scene, this)
+    this.usernameText = this.createUsernameText()
 
     // Create animations for each sprite
     this.createAnimations(this.spriteKey)
@@ -87,12 +89,31 @@ class Character {
     return this.stopFrame
   }
 
+  createUsernameText() {
+    // Create a new text object
+    const text = this.scene.add.text(0, 0, this.username, {
+      fontSize: '16px',
+      color: '#000000',
+      align: 'center',
+    })
+
+    // Set the origin of the text object to be the center of the text
+    text.setOrigin(-0.5, -5.5)
+
+    // Set the depth so the text is rendered above the sprite
+    text.setDepth(20)
+    text.setScale(0.333)
+
+    return text
+  }
+
   say(message) {
     this.chatBubble.showMessage(message)
   }
 
   update() {
     this.chatBubble.update()
+    this.usernameText.setPosition(this.sprite.x, this.sprite.y)
   }
 }
 export default Character

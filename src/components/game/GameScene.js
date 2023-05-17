@@ -12,6 +12,10 @@ export default class GameScene extends Phaser.Scene {
     this.otherPlayers = {}
   }
 
+  init(data) {
+    this.username = data.username
+  }
+
   preload() {
     this.preloadAssets()
   }
@@ -98,7 +102,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createCharacters() {
-    this.player = new Character(this, 'player', 'player_clothes', 'player_hair')
+    this.player = new Character(this, 'player', 'player_clothes', 'player_hair', this.username)
     this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair')
   }
 
@@ -207,6 +211,7 @@ export default class GameScene extends Phaser.Scene {
           },
         })
         otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
+        otherPlayer.update()
       }
     })
   }
@@ -321,7 +326,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createOtherPlayer(playerInfo, playerId) {
-    const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair')
+    const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair', playerInfo.username)
 
     otherPlayer.sprite.setPosition(playerInfo.x, playerInfo.y)
     otherPlayer.clothesSprite.setPosition(playerInfo.x, playerInfo.y)
