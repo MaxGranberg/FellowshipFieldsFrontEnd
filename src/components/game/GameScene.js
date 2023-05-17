@@ -193,26 +193,21 @@ export default class GameScene extends Phaser.Scene {
       if (playerInfo.playerId === this.playerId) {
         return
       }
+      const otherPlayer = this.otherPlayers[playerInfo.playerId]
 
-      if (!this.otherPlayers[playerInfo.playerId]) {
-        this.createOtherPlayer(playerInfo, playerInfo.playerId)
-      } else {
-        const otherPlayer = this.otherPlayers[playerInfo.playerId]
-
-        // Create a tween for the smooth movement
-        this.tweens.add({
-          targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
-          x: playerInfo.x,
-          y: playerInfo.y,
-          duration: 300, // Change this value to adjust the tween's duration
-          ease: 'linear',
-          onUpdate: () => {
-            this.updatePlayerDepth(this.otherPlayers[playerInfo.playerId])
-          },
-        })
-        otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
-        otherPlayer.update()
-      }
+      // Create a tween for the smooth movement
+      this.tweens.add({
+        targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
+        x: playerInfo.x,
+        y: playerInfo.y,
+        duration: 300, // Change this value to adjust the tween's duration
+        ease: 'linear',
+        onUpdate: () => {
+          this.updatePlayerDepth(this.otherPlayers[playerInfo.playerId])
+        },
+      })
+      otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
+      otherPlayer.update()
     })
   }
 
@@ -344,6 +339,7 @@ export default class GameScene extends Phaser.Scene {
       this.otherPlayers[playerId].sprite.destroy()
       this.otherPlayers[playerId].clothesSprite.destroy()
       this.otherPlayers[playerId].hairSprite.destroy()
+      this.otherPlayers[playerId].usernameText.destroy()
 
       // Remove characters from the gridEngine
       this.gridEngine.removeCharacter(this.otherPlayers[playerId])
