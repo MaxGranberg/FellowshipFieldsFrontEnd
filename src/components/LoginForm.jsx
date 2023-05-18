@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import AuthContext from './AuthContext'
+import socket from './socket'
 
 function LoginForm({ onRegister, setGlobalFlashMessage }) {
-  const { setIsAuthenticated } = useContext(AuthContext)
-  const [username, setUsername] = useState('')
+  const { setIsAuthenticated, setUsername } = useContext(AuthContext)
+  const [usernameLocal, setUsernameLocal] = useState('')
   const [password, setPassword] = useState('')
   const [flashMessage, setFlashMessage] = useState('')
 
@@ -16,7 +17,7 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: usernameLocal, password }),
         credentials: 'include',
       })
 
@@ -27,7 +28,10 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
       }
 
       setIsAuthenticated(true)
+      setUsername(usernameLocal)
+      localStorage.setItem('username', usernameLocal)
       setGlobalFlashMessage('Login successful!')
+      socket.emit('setUsername', usernameLocal)
     } catch (error) {
       // Handle request error
       setFlashMessage('An error occurred. Please try again later.')
@@ -41,8 +45,8 @@ function LoginForm({ onRegister, setGlobalFlashMessage }) {
         type="text"
         placeholder="Username"
         required
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        value={usernameLocal}
+        onChange={(e) => setUsernameLocal(e.target.value)}
       />
       <input
         type="password"

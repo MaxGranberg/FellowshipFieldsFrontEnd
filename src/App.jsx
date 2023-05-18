@@ -1,16 +1,37 @@
 import React, {
-  useState, useEffect, useContext,
+  useState, useEffect, useContext, useRef,
 } from 'react'
 import Game from './components/game/PhaserComponent'
 import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
 import AuthContext from './components/AuthContext'
+import socket from './components/socket'
+import Chat from './components/chat/Chat'
 
 function App() {
+  const gameRef = useRef()
   const [isRegistering, setIsRegistering] = useState(false)
   const [flashMessage, setFlashMessage] = useState(null)
 
-  const { isAuthenticated, setIsAuthenticated, logout } = useContext(AuthContext)
+  const {
+    isAuthenticated, setIsAuthenticated, logout, username,
+  } = useContext(AuthContext)
+
+  useEffect(() => {
+    // Anslut till servern när komponenten monteras
+    socket.connect()
+
+    socket.on('playerMoved', (playerData) => {
+      if (gameRef.current) {
+        gameRef.current.handlePlayerMoved(playerData)
+      }
+    })
+
+    // Stäng anslutningen när komponenten demonteras
+    return () => {
+      socket.disconnect()
+    }
+  }, [])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -44,8 +65,11 @@ function App() {
       </div>
       {flashMessage && <div className="flash-message-success">{flashMessage}</div>}
       {isAuthenticated ? (
-        <div className="game-container">
-          <Game />
+        <div className="game-and-chat-wrapper">
+          <div className="game-container">
+            <Game ref={gameRef} username={username} />
+          </div>
+          <Chat />
         </div>
       ) : (
         <div className="login-container">
