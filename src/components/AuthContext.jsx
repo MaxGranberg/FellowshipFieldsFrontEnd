@@ -10,6 +10,7 @@ const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [username, setUsername] = useState(localStorage.getItem('username') || '')
 
   const logout = async () => {
     const response = await fetch('https://fellowshipfields-auth-service.herokuapp.com/logout', {
@@ -44,8 +45,10 @@ export function AuthProvider({ children }) {
       isAuthenticated,
       setIsAuthenticated,
       logout,
+      username,
+      setUsername,
     }),
-    [isAuthenticated],
+    [isAuthenticated, username],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
