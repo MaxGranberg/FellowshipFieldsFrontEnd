@@ -14,6 +14,7 @@ export default class GameScene extends Phaser.Scene {
 
   init(data) {
     this.username = data.username
+    this.mapKey = data.mapKey
   }
 
   preload() {
@@ -29,12 +30,15 @@ export default class GameScene extends Phaser.Scene {
     this.createPhysicsCollisions(layers)
     this.createGridEngine(map)
     this.handleSocketEvents()
+    this.createTeleportZones()
   }
 
   update() {
     this.updateCharacterMovements()
     this.updateCharacterDepths()
-    this.updateTreeAnimations()
+    if (this.mapKey !== 'houseMap') {
+      this.updateTreeAnimations()
+    }
   }
 
   // -------------------- Custom methods -------------------------------------
@@ -45,6 +49,8 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('farmGroundTileset', '/assets/images/tiles/tiles.png')
     this.load.image('houses', '/assets/images/Buildings/buildings.png')
     this.load.image('crops', '/assets/images/farming/crops_all.png')
+    this.load.tilemapTiledJSON('houseMap', '/assets/testHouse.json')
+    this.load.image('farming', '/assets/images/farming/tools.png')
 
     // Load player and NPC spritesheets
     const spritesheets = [
@@ -63,7 +69,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createMap() {
-    return this.make.tilemap({ key: 'map' })
+    const mapKey = this.mapKey || 'map' // default to 'map' if no mapKey provided
+    return this.make.tilemap({ key: mapKey })
   }
 
   createLayers(map) {
@@ -72,44 +79,58 @@ export default class GameScene extends Phaser.Scene {
     const cropsTileset = map.addTilesetImage('crops', 'crops')
     const tilesets = [farmGroundTileset, housesTileset, cropsTileset]
 
+    if (this.mapKey === 'houseMap') {
+      const farmingTileset = map.addTilesetImage('farming', 'farming')
+      tilesets.pop()
+      tilesets.push(farmingTileset)
+    }
+
     this.layers = {}
     map.layers.forEach((layer) => {
       const layerName = layer.name
       this.layers[layerName] = map.createLayer(layerName, tilesets)
     })
 
+    if (this.mapKey !== 'houseMap') {
+      this.doors = map.getObjectLayer('Doors').objects
+    }
+
     return this.layers
   }
 
   createAnimatedTrees(map) {
-    this.anims.create({
-      key: 'treeAnimation',
-      frames: this.anims.generateFrameNumbers('trees', { start: 0, end: 3 }),
-      frameRate: 8,
-      repeat: -1,
-    })
-    const animatedTreeObjects = map.getObjectLayer('animatedTreesObjects').objects.filter((obj) => obj.properties.some((prop) => prop.name === 'type' && prop.value === 'animatedTree'))
+    if (this.mapKey !== 'houseMap') {
+      this.anims.create({
+        key: 'treeAnimation',
+        frames: this.anims.generateFrameNumbers('trees', { start: 0, end: 3 }),
+        frameRate: 8,
+        repeat: -1,
+      })
+      const animatedTreeObjects = map.getObjectLayer('animatedTreesObjects').objects.filter((obj) => obj.properties.some((prop) => prop.name === 'type' && prop.value === 'animatedTree'))
 
-    this.treeContainer = this.add.container()
-    this.treeContainer.setDepth(13)
+      this.treeContainer = this.add.container()
+      this.treeContainer.setDepth(13)
 
-    animatedTreeObjects.forEach((treeObj) => {
-      const treeSprite = this.add.sprite(treeObj.x, treeObj.y, 'trees').setOrigin(0, 0.5)
-      treeSprite.play('treeAnimation')
-      this.treeSprites[`${treeObj.x}-${treeObj.y}`] = treeSprite
-      this.treeContainer.add(treeSprite)
-    })
+      animatedTreeObjects.forEach((treeObj) => {
+        const treeSprite = this.add.sprite(treeObj.x, treeObj.y, 'trees').setOrigin(0, 0.5)
+        treeSprite.play('treeAnimation')
+        this.treeSprites[`${treeObj.x}-${treeObj.y}`] = treeSprite
+        this.treeContainer.add(treeSprite)
+      })
+    }
   }
 
   createCharacters() {
     this.player = new Character(this, 'player', 'player_clothes', 'player_hair', this.username)
-    this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair')
+    if (this.mapKey !== 'houseMap') {
+      this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair')
+    }
   }
 
   createCameraController(map) {
-    const cameraController = new CameraController(this.cameras.main)
-    cameraController.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    cameraController.follow(this.player.sprite)
+    this.cameraController = new CameraController(this.cameras.main)
+    this.cameraController.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+    this.cameraController.follow(this.player.sprite)
   }
 
   createPhysicsCollisions(layers) {
@@ -119,48 +140,75 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createGridEngine(map) {
-    const gridEngineConfig = {
-      characters: [
-        {
-          id: 'player',
-          sprite: this.player.sprite,
-          startPosition: { x: 30, y: 20 },
-          speed: 4,
-        },
-        {
-          id: 'player_clothes',
-          sprite: this.player.clothesSprite,
-          startPosition: { x: 30, y: 20 },
-          speed: 4,
-        },
-        {
-          id: 'player_hair',
-          sprite: this.player.hairSprite,
-          startPosition: { x: 30, y: 20 },
-          speed: 4,
-        },
-        {
-          id: 'npc',
-          sprite: this.npc.sprite,
-          startPosition: { x: 25, y: 25 },
-          speed: 1,
-        },
-        {
-          id: 'npc_clothes',
-          sprite: this.npc.clothesSprite,
-          startPosition: { x: 25, y: 25 },
-          speed: 1,
-        },
-        {
-          id: 'npc_hair',
-          sprite: this.npc.hairSprite,
-          startPosition: { x: 25, y: 25 },
-          speed: 1,
-        },
-      ],
+    if (this.mapKey === 'houseMap') {
+      const gridEngineConfig = {
+        characters: [
+          {
+            id: 'player',
+            sprite: this.player.sprite,
+            startPosition: { x: 8, y: 14 },
+            speed: 4,
+          },
+          {
+            id: 'player_clothes',
+            sprite: this.player.clothesSprite,
+            startPosition: { x: 8, y: 14 },
+            speed: 4,
+          },
+          {
+            id: 'player_hair',
+            sprite: this.player.hairSprite,
+            startPosition: { x: 8, y: 14 },
+            speed: 4,
+          },
+        ],
+      }
+      this.map = map
+      this.gridEngine.create(map, gridEngineConfig)
+    } else {
+      const gridEngineConfig = {
+        characters: [
+          {
+            id: 'player',
+            sprite: this.player.sprite,
+            startPosition: { x: 30, y: 20 },
+            speed: 4,
+          },
+          {
+            id: 'player_clothes',
+            sprite: this.player.clothesSprite,
+            startPosition: { x: 30, y: 20 },
+            speed: 4,
+          },
+          {
+            id: 'player_hair',
+            sprite: this.player.hairSprite,
+            startPosition: { x: 30, y: 20 },
+            speed: 4,
+          },
+          {
+            id: 'npc',
+            sprite: this.npc.sprite,
+            startPosition: { x: 25, y: 25 },
+            speed: 1,
+          },
+          {
+            id: 'npc_clothes',
+            sprite: this.npc.clothesSprite,
+            startPosition: { x: 25, y: 25 },
+            speed: 1,
+          },
+          {
+            id: 'npc_hair',
+            sprite: this.npc.hairSprite,
+            startPosition: { x: 25, y: 25 },
+            speed: 1,
+          },
+        ],
+      }
+      this.map = map
+      this.gridEngine.create(map, gridEngineConfig)
     }
-    this.map = map
-    this.gridEngine.create(map, gridEngineConfig)
   }
 
   handleSocketEvents() {
@@ -219,7 +267,10 @@ export default class GameScene extends Phaser.Scene {
     this.player.clothesSprite.setPosition(playerSprite.x, playerSprite.y)
     this.player.hairSprite.setPosition(playerSprite.x, playerSprite.y)
 
-    this.updateNPC()
+    if (this.mapKey !== 'houseMap') {
+      this.updateNPC()
+    }
+
     this.player.update() // Chatbubble update to follow the players when moving
     Object.values(this.otherPlayers).forEach((otherPlayer) => {
       otherPlayer.update()
@@ -288,13 +339,19 @@ export default class GameScene extends Phaser.Scene {
     const playerTile = this.map
       .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
 
-    const housesLayer = this.layers.Houses
-    const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
+    if (this.mapKey !== 'houseMap') {
+      const housesLayer = this.layers.Houses
+      const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
 
-    if (housesTile) {
-      playerSprite.setDepth(housesLayer.depth + 1)
-      clothingSprite.setDepth(housesLayer.depth + 1)
-      hairSprite.setDepth(housesLayer.depth + 1)
+      if (housesTile) {
+        playerSprite.setDepth(housesLayer.depth + 1)
+        clothingSprite.setDepth(housesLayer.depth + 1)
+        hairSprite.setDepth(housesLayer.depth + 1)
+      } else {
+        playerSprite.setDepth(8)
+        clothingSprite.setDepth(8)
+        hairSprite.setDepth(8)
+      }
     } else {
       playerSprite.setDepth(8)
       clothingSprite.setDepth(8)
@@ -406,5 +463,32 @@ export default class GameScene extends Phaser.Scene {
     } else if (this.otherPlayers[playerId]) {
       this.otherPlayers[playerId].say(message)
     }
+  }
+
+  createTeleportZones() {
+    this.doors.forEach((door) => {
+      const doorZone = this.add.zone(door.x, door.y, door.width, door.height).setOrigin(0)
+      // Enable physics on the zone
+      this.physics.world.enable(doorZone)
+
+      doorZone.setData('houseMap', door.properties.find((property) => property.name === 'destination').value)
+      this.physics.add.overlap(this.player.sprite, doorZone, this.handleTeleport, null, this)
+      this.physics.add.overlap(this.player.clothesSprite, doorZone, this.handleTeleport, null, this)
+      this.physics.add.overlap(this.player.hairSprite, doorZone, this.handleTeleport, null, this)
+    })
+  }
+
+  handleTeleport(player, doorZone) {
+    const target = doorZone.getData('houseMap')
+    // do something with the target, like load a new map or move the player to a new position
+    this.loadNewMap(target)
+  }
+
+  loadNewMap(target) {
+    // this would be a good place to use a fade out animation before changing the map
+    this.cameras.main.fadeOut(500)
+    this.time.delayedCall(500, () => {
+      this.scene.restart({ mapKey: target }) // restart the scene with the new map
+    }, [], this)
   }
 }
