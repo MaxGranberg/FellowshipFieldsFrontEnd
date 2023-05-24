@@ -35,8 +35,8 @@ export default class GameScene extends Phaser.Scene {
 
   update() {
     this.updateCharacterMovements()
-    this.updateCharacterDepths()
     if (this.mapKey !== 'houseMap') {
+      this.updateCharacterDepths()
       this.updateTreeAnimations()
     }
   }
@@ -45,54 +45,71 @@ export default class GameScene extends Phaser.Scene {
 
   preloadAssets() {
     // Load map and tilesets
-    this.load.tilemapTiledJSON('map', '/assets/FellowshipFieldsV0.json')
-    this.load.image('farmGroundTileset', '/assets/images/tiles/tiles.png')
-    this.load.image('houses', '/assets/images/Buildings/buildings.png')
-    this.load.image('crops', '/assets/images/farming/crops_all.png')
-    this.load.tilemapTiledJSON('houseMap', '/assets/testHouse.json')
-    this.load.image('farming', '/assets/images/farming/tools.png')
+    if (this.mapKey !== 'houseMap') {
+      this.load.tilemapTiledJSON('map', '/assets/FellowshipFieldsV0.json')
+      this.load.image('farmGroundTileset', '/assets/images/tiles/tiles.png')
+      this.load.image('houses', '/assets/images/Buildings/buildings.png')
+      this.load.image('crops', '/assets/images/farming/crops_all.png')
+    } else {
+      this.load.tilemapTiledJSON('houseMap', '/assets/testHouse.json')
+      this.load.image('houses', '/assets/images/Buildings/buildings.png')
+      this.load.image('farming', '/assets/images/farming/tools.png')
+    }
 
     // Load player and NPC spritesheets
-    const spritesheets = [
-      { key: 'player', path: '/assets/images/walking/char1_walk.png' },
-      { key: 'player_clothes', path: '/assets/images/walking/clothes/spooky_walk.png' },
-      { key: 'player_hair', path: '/assets/images/walking/hair/hair1.png' },
-      { key: 'npc', path: '/assets/images/walking/char4_walk.png' },
-      { key: 'npc_clothes', path: '/assets/images/walking/clothes/custom_overalls_walk.png' },
-      { key: 'npc_hair', path: '/assets/images/walking/hair/hair2.png' },
-      { key: 'trees', path: '/assets/images/tiles/tree_shake1.png' },
-    ]
-
-    spritesheets.forEach(({ key, path }) => {
-      this.load.spritesheet(key, path, { frameWidth: 32, frameHeight: 32 })
-    })
+    if (this.mapKey !== 'houseMap') {
+      const spritesheets = [
+        { key: 'player', path: '/assets/images/walking/char1_walk.png' },
+        { key: 'player_clothes', path: '/assets/images/walking/clothes/spooky_walk.png' },
+        { key: 'player_hair', path: '/assets/images/walking/hair/hair1.png' },
+        { key: 'npc', path: '/assets/images/walking/char4_walk.png' },
+        { key: 'npc_clothes', path: '/assets/images/walking/clothes/custom_overalls_walk.png' },
+        { key: 'npc_hair', path: '/assets/images/walking/hair/hair2.png' },
+        { key: 'trees', path: '/assets/images/tiles/tree_shake1.png' },
+      ]
+      spritesheets.forEach(({ key, path }) => {
+        this.load.spritesheet(key, path, { frameWidth: 32, frameHeight: 32 })
+      })
+    } else {
+      const spritesheets = [
+        { key: 'player', path: '/assets/images/walking/char1_walk.png' },
+        { key: 'player_clothes', path: '/assets/images/walking/clothes/spooky_walk.png' },
+        { key: 'player_hair', path: '/assets/images/walking/hair/hair1.png' },
+      ]
+      spritesheets.forEach(({ key, path }) => {
+        this.load.spritesheet(key, path, { frameWidth: 32, frameHeight: 32 })
+      })
+    }
   }
 
   createMap() {
-    const mapKey = this.mapKey || 'map' // default to 'map' if no mapKey provided
-    return this.make.tilemap({ key: mapKey })
+    return this.make.tilemap({ key: this.mapKey })
   }
 
   createLayers(map) {
-    const farmGroundTileset = map.addTilesetImage('farmGroundTileset', 'farmGroundTileset')
-    const housesTileset = map.addTilesetImage('houses', 'houses')
-    const cropsTileset = map.addTilesetImage('crops', 'crops')
-    const tilesets = [farmGroundTileset, housesTileset, cropsTileset]
-
-    if (this.mapKey === 'houseMap') {
-      const farmingTileset = map.addTilesetImage('farming', 'farming')
-      tilesets.pop()
-      tilesets.push(farmingTileset)
-    }
-
-    this.layers = {}
-    map.layers.forEach((layer) => {
-      const layerName = layer.name
-      this.layers[layerName] = map.createLayer(layerName, tilesets)
-    })
-
     if (this.mapKey !== 'houseMap') {
+      const farmGroundTileset = map.addTilesetImage('farmGroundTileset', 'farmGroundTileset')
+      const housesTileset = map.addTilesetImage('houses', 'houses')
+      const cropsTileset = map.addTilesetImage('crops', 'crops')
+      const tilesets = [farmGroundTileset, housesTileset, cropsTileset]
+
+      this.layers = {}
+      map.layers.forEach((layer) => {
+        const layerName = layer.name
+        this.layers[layerName] = map.createLayer(layerName, tilesets)
+      })
+
       this.doors = map.getObjectLayer('Doors').objects
+    } else {
+      const housesTileset = map.addTilesetImage('houses', 'houses')
+      const farmingTileset = map.addTilesetImage('farming', 'farming')
+      const tilesets = [housesTileset, farmingTileset]
+
+      this.layers = {}
+      map.layers.forEach((layer) => {
+        const layerName = layer.name
+        this.layers[layerName] = map.createLayer(layerName, tilesets)
+      })
     }
 
     return this.layers
@@ -213,11 +230,27 @@ export default class GameScene extends Phaser.Scene {
 
   handleSocketEvents() {
     // Emit player's initial position
-    socket.emit('playerCreated', {
-      x: 30, y: 20, playerId: this.playerId, direction: 'down',
-    })
+    if (this.mapKey !== 'houseMap') {
+      socket.emit('playerCreated', {
+        x: 30, y: 20, playerId: this.playerId, direction: 'down',
+      })
+    }
+
+    if (this.mapKey === 'houseMap') {
+      socket.emit('playerCreatedInHouse', {
+        x: 30, y: 20, playerId: this.playerId, direction: 'up',
+      })
+    }
 
     socket.on('currentPlayers', (players) => {
+      Object.keys(players).forEach((playerId) => {
+        if (playerId !== this.playerId) {
+          this.createOtherPlayer(players[playerId], playerId)
+        }
+      })
+    })
+
+    socket.on('currentPlayersInHouse', (players) => {
       Object.keys(players).forEach((playerId) => {
         if (playerId !== this.playerId) {
           this.createOtherPlayer(players[playerId], playerId)
@@ -237,25 +270,38 @@ export default class GameScene extends Phaser.Scene {
       this.handleChatMessage(messageData)
     })
 
+    socket.on('playerRemovedFromMap', (playerInfo) => {
+      this.removeOtherPlayer(playerInfo.playerId)
+    })
+
     socket.on('playerMoved', (playerInfo) => {
-      if (playerInfo.playerId === this.playerId) {
+      if (playerInfo.playerId === this.playerId || playerInfo.map !== this.mapKey) {
         return
       }
       const otherPlayer = this.otherPlayers[playerInfo.playerId]
 
-      // Create a tween for the smooth movement
-      this.tweens.add({
-        targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
-        x: playerInfo.x,
-        y: playerInfo.y,
-        duration: 300, // Change this value to adjust the tween's duration
-        ease: 'linear',
-        onUpdate: () => {
-          this.updatePlayerDepth(this.otherPlayers[playerInfo.playerId])
-        },
-      })
-      otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
-      otherPlayer.update()
+      // Check if otherPlayer is defined before accessing its properties
+      if (otherPlayer) {
+        // Create a tween for the smooth movement
+        this.tweens.add({
+          targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
+          x: playerInfo.x,
+          y: playerInfo.y,
+          duration: 300, // Change this value to adjust the tween's duration
+          ease: 'linear',
+          onUpdate: () => {
+            if (playerInfo.map === this.mapKey) {
+              if (this.mapKey !== 'houseMap') {
+                this.updatePlayerDepth(otherPlayer)
+              }
+            }
+          },
+        })
+        if (playerInfo.map === this.mapKey) {
+          otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
+          otherPlayer.update()
+        }
+      }
     })
   }
 
@@ -306,6 +352,7 @@ export default class GameScene extends Phaser.Scene {
       socket.emit('playerMoved', {
         x: playerSprite.x,
         y: playerSprite.y,
+        map: this.mapKey,
         playerId: this.playerId,
         direction: this.playerDirection,
         moving: isMoving,
@@ -339,19 +386,13 @@ export default class GameScene extends Phaser.Scene {
     const playerTile = this.map
       .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
 
-    if (this.mapKey !== 'houseMap') {
-      const housesLayer = this.layers.Houses
-      const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
+    const housesLayer = this.layers.Houses
+    const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
 
-      if (housesTile) {
-        playerSprite.setDepth(housesLayer.depth + 1)
-        clothingSprite.setDepth(housesLayer.depth + 1)
-        hairSprite.setDepth(housesLayer.depth + 1)
-      } else {
-        playerSprite.setDepth(8)
-        clothingSprite.setDepth(8)
-        hairSprite.setDepth(8)
-      }
+    if (housesTile) {
+      playerSprite.setDepth(housesLayer.depth + 1)
+      clothingSprite.setDepth(housesLayer.depth + 1)
+      hairSprite.setDepth(housesLayer.depth + 1)
     } else {
       playerSprite.setDepth(8)
       clothingSprite.setDepth(8)
@@ -399,9 +440,9 @@ export default class GameScene extends Phaser.Scene {
       this.otherPlayers[playerId].usernameText.destroy()
 
       // Remove characters from the gridEngine
-      this.gridEngine.removeCharacter(this.otherPlayers[playerId])
-      this.gridEngine.removeCharacter(`${this.otherPlayers[playerId]}_clothes`)
-      this.gridEngine.removeCharacter(`${this.otherPlayers[playerId]}_hair`)
+      this.gridEngine.removeCharacter(playerId)
+      this.gridEngine.removeCharacter(`${playerId}_clothes`)
+      this.gridEngine.removeCharacter(`${playerId}_hair`)
       delete this.otherPlayers[playerId]
     }
   }
@@ -411,27 +452,25 @@ export default class GameScene extends Phaser.Scene {
       return
     }
 
-    if (!this.otherPlayers[playerInfo.playerId]) {
-      this.createOtherPlayer(playerInfo, playerInfo.playerId)
-    } else {
-      const otherPlayer = this.otherPlayers[playerInfo.playerId]
-      otherPlayer.sprite.x = playerInfo.x
-      otherPlayer.sprite.y = playerInfo.y
-      otherPlayer.clothesSprite.setPosition(playerInfo.x, playerInfo.y)
-      otherPlayer.hairSprite.setPosition(playerInfo.x, playerInfo.y)
+    const otherPlayer = this.otherPlayers[playerInfo.playerId]
+    otherPlayer.sprite.x = playerInfo.x
+    otherPlayer.sprite.y = playerInfo.y
+    otherPlayer.clothesSprite.setPosition(playerInfo.x, playerInfo.y)
+    otherPlayer.hairSprite.setPosition(playerInfo.x, playerInfo.y)
 
-      if (playerInfo.moving) {
-        otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
-      }
+    if (playerInfo.moving) {
+      otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
     }
   }
 
   createGridEngineOtherPlayer(playerId) {
-    // console.log(playerId):  ltYEfF48W86bChH7AAAz
     const gridEngineOtherPlayerConfig = {
-      id: playerId, // 'player' eller en ny sprite kanske
+      id: playerId,
       sprite: this.otherPlayers[playerId].sprite,
-      startPosition: { x: 30, y: 20 },
+      startPosition: {
+        x: this.otherPlayers[playerId].sprite.x,
+        y: this.otherPlayers[playerId].sprite.y,
+      },
       speed: 4,
     }
 
@@ -440,7 +479,10 @@ export default class GameScene extends Phaser.Scene {
     const gridEngineOtherPlayerClothesConfig = {
       id: `${playerId}_clothes`,
       sprite: this.otherPlayers[playerId].clothesSprite,
-      startPosition: { x: 30, y: 20 },
+      startPosition: {
+        x: this.otherPlayers[playerId].clothesSprite.x,
+        y: this.otherPlayers[playerId].clothesSprite.y,
+      },
       speed: 4,
     }
 
@@ -449,7 +491,10 @@ export default class GameScene extends Phaser.Scene {
     const gridEngineOtherPlayerHairConfig = {
       id: `${playerId}_hair`,
       sprite: this.otherPlayers[playerId].hairSprite,
-      startPosition: { x: 30, y: 20 },
+      startPosition: {
+        x: this.otherPlayers[playerId].hairSprite.x,
+        y: this.otherPlayers[playerId].hairSprite.y,
+      },
       speed: 4,
     }
 
@@ -490,5 +535,9 @@ export default class GameScene extends Phaser.Scene {
     this.time.delayedCall(500, () => {
       this.scene.restart({ mapKey: target }) // restart the scene with the new map
     }, [], this)
+    socket.emit('playerChangedLocation', {
+      playerId: this.playerId,
+      mapKey: target, // the new map key
+    })
   }
 }

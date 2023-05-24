@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socket = io('https://fellowshipfields-realtime.herokuapp.com', {
+const socket = io('http://localhost:8080/', {
   autoConnect: false, // Anslut inte automatiskt vid import
   withCredentials: true,
 })
