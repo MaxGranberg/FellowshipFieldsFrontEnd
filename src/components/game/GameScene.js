@@ -35,8 +35,8 @@ export default class GameScene extends Phaser.Scene {
 
   update() {
     this.updateCharacterMovements()
+    this.updateCharacterDepths()
     if (this.mapKey !== 'houseMap') {
-      this.updateCharacterDepths()
       this.updateTreeAnimations()
     }
   }
@@ -361,7 +361,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateCharacterDepths() {
-    this.updatePlayerDepth(this.npc)
+    if (this.mapKey !== 'houseMap') {
+      this.updatePlayerDepth(this.npc)
+    }
     this.updatePlayerDepth(this.player)
   }
 
@@ -383,16 +385,22 @@ export default class GameScene extends Phaser.Scene {
     const clothingSprite = character.clothesSprite
     const { hairSprite } = character
 
-    const playerTile = this.map
-      .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
+    if (this.mapKey !== 'houseMap') {
+      const playerTile = this.map
+        .worldToTileXY(playerSprite.x, playerSprite.y + playerSprite.height / 4)
 
-    const housesLayer = this.layers.Houses
-    const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
+      const housesLayer = this.layers.Houses
+      const housesTile = housesLayer.getTileAt(playerTile.x, playerTile.y)
 
-    if (housesTile) {
-      playerSprite.setDepth(housesLayer.depth + 1)
-      clothingSprite.setDepth(housesLayer.depth + 1)
-      hairSprite.setDepth(housesLayer.depth + 1)
+      if (housesTile) {
+        playerSprite.setDepth(housesLayer.depth + 1)
+        clothingSprite.setDepth(housesLayer.depth + 1)
+        hairSprite.setDepth(housesLayer.depth + 1)
+      } else {
+        playerSprite.setDepth(8)
+        clothingSprite.setDepth(8)
+        hairSprite.setDepth(8)
+      }
     } else {
       playerSprite.setDepth(8)
       clothingSprite.setDepth(8)
