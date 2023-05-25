@@ -1,7 +1,9 @@
 import Phaser from 'phaser'
 import socket from '../socket'
+import AssetLoader from './AssetLoader'
 import Character from './Character'
 import CameraController from './CameraController'
+import SocketManager from './SocketManager'
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -18,7 +20,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.preloadAssets()
+    const assetLoader = new AssetLoader(this)
+    assetLoader.preload()
   }
 
   create() {
@@ -29,7 +32,8 @@ export default class GameScene extends Phaser.Scene {
     this.createCameraController(map)
     this.createPhysicsCollisions(layers)
     this.createGridEngine(map)
-    this.handleSocketEvents()
+    const socketManager = new SocketManager(this, socket)
+    socketManager.handleSocketEvents()
     this.createTeleportZones()
   }
 
@@ -42,45 +46,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   // -------------------- Custom methods -------------------------------------
-
-  preloadAssets() {
-    // Load map and tilesets
-    if (this.mapKey !== 'houseMap') {
-      this.load.tilemapTiledJSON('map', '/assets/FellowshipFieldsV0.json')
-      this.load.image('farmGroundTileset', '/assets/images/tiles/tiles.png')
-      this.load.image('houses', '/assets/images/Buildings/buildings.png')
-      this.load.image('crops', '/assets/images/farming/crops_all.png')
-    } else {
-      this.load.tilemapTiledJSON('houseMap', '/assets/testHouse.json')
-      this.load.image('houses', '/assets/images/Buildings/buildings.png')
-      this.load.image('farming', '/assets/images/farming/tools.png')
-    }
-
-    // Load player and NPC spritesheets
-    if (this.mapKey !== 'houseMap') {
-      const spritesheets = [
-        { key: 'player', path: '/assets/images/walking/char1_walk.png' },
-        { key: 'player_clothes', path: '/assets/images/walking/clothes/spooky_walk.png' },
-        { key: 'player_hair', path: '/assets/images/walking/hair/hair1.png' },
-        { key: 'npc', path: '/assets/images/walking/char4_walk.png' },
-        { key: 'npc_clothes', path: '/assets/images/walking/clothes/custom_overalls_walk.png' },
-        { key: 'npc_hair', path: '/assets/images/walking/hair/hair2.png' },
-        { key: 'trees', path: '/assets/images/tiles/tree_shake1.png' },
-      ]
-      spritesheets.forEach(({ key, path }) => {
-        this.load.spritesheet(key, path, { frameWidth: 32, frameHeight: 32 })
-      })
-    } else {
-      const spritesheets = [
-        { key: 'player', path: '/assets/images/walking/char1_walk.png' },
-        { key: 'player_clothes', path: '/assets/images/walking/clothes/spooky_walk.png' },
-        { key: 'player_hair', path: '/assets/images/walking/hair/hair1.png' },
-      ]
-      spritesheets.forEach(({ key, path }) => {
-        this.load.spritesheet(key, path, { frameWidth: 32, frameHeight: 32 })
-      })
-    }
-  }
 
   createMap() {
     return this.make.tilemap({ key: this.mapKey })
@@ -226,83 +191,6 @@ export default class GameScene extends Phaser.Scene {
       this.map = map
       this.gridEngine.create(map, gridEngineConfig)
     }
-  }
-
-  handleSocketEvents() {
-    // Emit player's initial position
-    if (this.mapKey !== 'houseMap') {
-      socket.emit('playerCreated', {
-        x: 30, y: 20, playerId: this.playerId, direction: 'down',
-      })
-    }
-
-    if (this.mapKey === 'houseMap') {
-      socket.emit('playerCreatedInHouse', {
-        x: 30, y: 20, playerId: this.playerId, direction: 'up',
-      })
-    }
-
-    socket.on('currentPlayers', (players) => {
-      Object.keys(players).forEach((playerId) => {
-        if (playerId !== this.playerId) {
-          this.createOtherPlayer(players[playerId], playerId)
-        }
-      })
-    })
-
-    socket.on('currentPlayersInHouse', (players) => {
-      Object.keys(players).forEach((playerId) => {
-        if (playerId !== this.playerId) {
-          this.createOtherPlayer(players[playerId], playerId)
-        }
-      })
-    })
-
-    socket.on('playerJoined', (playerInfo) => {
-      this.createOtherPlayer(playerInfo, playerInfo.playerId)
-    })
-
-    socket.on('playerDisconnected', (playerId) => {
-      this.removeOtherPlayer(playerId)
-    })
-
-    socket.on('chatMessage', (messageData) => {
-      this.handleChatMessage(messageData)
-    })
-
-    socket.on('playerRemovedFromMap', (playerInfo) => {
-      this.removeOtherPlayer(playerInfo.playerId)
-    })
-
-    socket.on('playerMoved', (playerInfo) => {
-      if (playerInfo.playerId === this.playerId || playerInfo.map !== this.mapKey) {
-        return
-      }
-      const otherPlayer = this.otherPlayers[playerInfo.playerId]
-
-      // Check if otherPlayer is defined before accessing its properties
-      if (otherPlayer) {
-        // Create a tween for the smooth movement
-        this.tweens.add({
-          targets: [otherPlayer.sprite, otherPlayer.clothesSprite, otherPlayer.hairSprite],
-          x: playerInfo.x,
-          y: playerInfo.y,
-          duration: 300, // Change this value to adjust the tween's duration
-          ease: 'linear',
-          onUpdate: () => {
-            if (playerInfo.map === this.mapKey) {
-              if (this.mapKey !== 'houseMap') {
-                this.updatePlayerDepth(otherPlayer)
-              }
-            }
-          },
-        })
-        if (playerInfo.map === this.mapKey) {
-          otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
-          otherPlayer.update()
-        }
-      }
-    })
   }
 
   updateCharacterMovements() {
