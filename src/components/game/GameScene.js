@@ -533,7 +533,7 @@ export default class GameScene extends Phaser.Scene {
     // this would be a good place to use a fade out animation before changing the map
     this.cameras.main.fadeOut(500)
     this.time.delayedCall(500, () => {
-      this.scene.restart({ mapKey: target }) // restart the scene with the new map
+      this.scene.restart({ mapKey: target, username: this.username })
     }, [], this)
     socket.emit('playerChangedLocation', {
       playerId: this.playerId,
