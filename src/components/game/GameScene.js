@@ -35,6 +35,11 @@ export default class GameScene extends Phaser.Scene {
     const socketManager = new SocketManager(this, socket)
     socketManager.handleSocketEvents()
     this.createTeleportZones()
+    this.input.keyboard.on('keydown', (event) => {
+      if (event.ctrlKey && event.key === 'g') {
+        this.scene.start('MiniGameScene')
+      }
+    })
   }
 
   update() {
@@ -103,6 +108,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createCharacters() {
+    if (this.player) {
+      this.removeOtherPlayer(this.playerId)
+    }
     this.player = new Character(this, 'player', 'player_clothes', 'player_hair', this.username)
     if (this.mapKey !== 'houseMap') {
       this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair')
