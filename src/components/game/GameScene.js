@@ -57,9 +57,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createLayers(map) {
+    const housesTileset = map.addTilesetImage('houses', 'houses')
+
     if (this.mapKey !== 'houseMap') {
       const farmGroundTileset = map.addTilesetImage('farmGroundTileset', 'farmGroundTileset')
-      const housesTileset = map.addTilesetImage('houses', 'houses')
       const cropsTileset = map.addTilesetImage('crops', 'crops')
       const tilesets = [farmGroundTileset, housesTileset, cropsTileset]
 
@@ -68,10 +69,7 @@ export default class GameScene extends Phaser.Scene {
         const layerName = layer.name
         this.layers[layerName] = map.createLayer(layerName, tilesets)
       })
-
-      this.doors = map.getObjectLayer('Doors').objects
     } else {
-      const housesTileset = map.addTilesetImage('houses', 'houses')
       const farmingTileset = map.addTilesetImage('farming', 'farming')
       const tilesets = [housesTileset, farmingTileset]
 
@@ -80,10 +78,9 @@ export default class GameScene extends Phaser.Scene {
         const layerName = layer.name
         this.layers[layerName] = map.createLayer(layerName, tilesets)
       })
-
-      this.doors = map.getObjectLayer('Doors').objects
     }
 
+    this.doors = map.getObjectLayer('Doors').objects
     return this.layers
   }
 
@@ -115,7 +112,7 @@ export default class GameScene extends Phaser.Scene {
     }
     this.player = new Character(this, 'player', 'player_clothes', 'player_hair', this.username)
     if (this.mapKey !== 'houseMap') {
-      this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair')
+      this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair', 'NPC')
     }
   }
 
@@ -175,20 +172,17 @@ export default class GameScene extends Phaser.Scene {
           {
             id: 'npc',
             sprite: this.npc.sprite,
-            startPosition: { x: 25, y: 25 },
-            speed: 1,
+            startPosition: { x: 26, y: 26 },
           },
           {
             id: 'npc_clothes',
             sprite: this.npc.clothesSprite,
-            startPosition: { x: 25, y: 25 },
-            speed: 1,
+            startPosition: { x: 26, y: 26 },
           },
           {
             id: 'npc_hair',
             sprite: this.npc.hairSprite,
-            startPosition: { x: 25, y: 25 },
-            speed: 1,
+            startPosition: { x: 26, y: 26 },
           },
         ],
       }
@@ -205,10 +199,7 @@ export default class GameScene extends Phaser.Scene {
     this.player.clothesSprite.setPosition(playerSprite.x, playerSprite.y)
     this.player.hairSprite.setPosition(playerSprite.x, playerSprite.y)
 
-    if (this.mapKey !== 'houseMap') {
-      this.updateNPC()
-    }
-
+    this.npc.update()
     this.player.update() // Chatbubble update to follow the players when moving
     Object.values(this.otherPlayers).forEach((otherPlayer) => {
       otherPlayer.update()
@@ -298,24 +289,6 @@ export default class GameScene extends Phaser.Scene {
       clothingSprite.setDepth(8)
       hairSprite.setDepth(8)
     }
-  }
-
-  updateNPC() {
-    this.npc.clothesSprite.setPosition(this.npc.sprite.x, this.npc.sprite.y)
-    this.npc.hairSprite.setPosition(this.npc.sprite.x, this.npc.sprite.y)
-
-    // Add simple AI logic for the NPC here
-    if (!this.gridEngine.isMoving('npc')) {
-      this.gridEngine.moveRandomly('npc')
-    }
-    const direction = this.gridEngine.getFacingDirection('npc')
-    this.gridEngine.move('npc', direction)
-    this.gridEngine.move('npc_clothes', direction)
-    this.gridEngine.move('npc_hair', direction)
-
-    // Update the NPC's animation
-    const isMoving = this.gridEngine.isMoving('npc')
-    this.npc.updateAnimation(direction, isMoving)
   }
 
   createOtherPlayer(playerInfo, playerId) {
