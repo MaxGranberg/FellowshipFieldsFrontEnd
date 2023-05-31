@@ -1,16 +1,18 @@
 import ChatBubble from '../chat/ChatBubble'
 
 class Character {
-  constructor(scene, spriteKey, clothesKey, hairKey, username) {
+  constructor(scene, spriteKey, clothesKey, hairKey, shadowKey, username) {
     this.scene = scene
     this.spriteKey = spriteKey
     this.clothesKey = clothesKey
     this.hairKey = hairKey
+    this.shadowKey = shadowKey
     this.username = username
 
     this.sprite = this.createSprite(this.spriteKey)
     this.clothesSprite = this.createAccessorySprite(this.clothesKey, this.sprite)
     this.hairSprite = this.createAccessorySprite(this.hairKey, this.sprite)
+    this.shadowSprite = this.createAccessorySprite(this.shadowKey, this.sprite)
 
     this.stopFrame = 0
     this.chatBubble = new ChatBubble(scene, this)
@@ -118,6 +120,8 @@ class Character {
   update() {
     this.chatBubble.update()
     this.usernameText.setPosition(this.sprite.x, this.sprite.y)
+    this.shadowSprite
+      .setPosition(this.sprite.x + 6.4, this.sprite.y + 14.5) // Place the shadow below the player
   }
 }
 export default Character

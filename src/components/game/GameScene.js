@@ -37,6 +37,9 @@ export default class GameScene extends Phaser.Scene {
     this.createTeleportZones()
     this.input.keyboard.on('keydown', (event) => {
       if (event.altKey && event.key === 't') {
+        Object.keys(this.otherPlayers).forEach((playerId) => {
+          this.removeOtherPlayer(playerId)
+        })
         this.scene.start('MiniGameScene')
       }
     })
@@ -110,9 +113,9 @@ export default class GameScene extends Phaser.Scene {
     if (this.player) {
       this.removeOtherPlayer(this.playerId)
     }
-    this.player = new Character(this, 'player', 'player_clothes', 'player_hair', this.username)
+    this.player = new Character(this, 'player', 'player_clothes', 'player_hair', 'shadow', this.username)
     if (this.mapKey !== 'houseMap') {
-      this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair', 'NPC')
+      this.npc = new Character(this, 'npc', 'npc_clothes', 'npc_hair', 'npc_shadow', 'NPC')
     }
   }
 
@@ -144,6 +147,12 @@ export default class GameScene extends Phaser.Scene {
             startPosition: { x: 8, y: 12 },
             speed: 4,
           },
+          {
+            id: 'shadow',
+            sprite: this.player.shadowSprite,
+            startPosition: { x: 8, y: 12 },
+            speed: 4,
+          },
         ],
       }
       this.map = map
@@ -170,6 +179,12 @@ export default class GameScene extends Phaser.Scene {
             speed: 4,
           },
           {
+            id: 'shadow',
+            sprite: this.player.shadowSprite,
+            startPosition: { x: 8, y: 12 },
+            speed: 4,
+          },
+          {
             id: 'npc',
             sprite: this.npc.sprite,
             startPosition: { x: 26, y: 26 },
@@ -182,6 +197,11 @@ export default class GameScene extends Phaser.Scene {
           {
             id: 'npc_hair',
             sprite: this.npc.hairSprite,
+            startPosition: { x: 26, y: 26 },
+          },
+          {
+            id: 'npc_shadow',
+            sprite: this.npc.shadowSprite,
             startPosition: { x: 26, y: 26 },
           },
         ],
@@ -213,21 +233,25 @@ export default class GameScene extends Phaser.Scene {
         this.gridEngine.move('player', 'left')
         this.gridEngine.move('player_clothes', 'left')
         this.gridEngine.move('player_hair', 'left')
+        this.gridEngine.move('shadow', 'left')
         this.playerDirection = 'left'
       } else if (cursors.right.isDown) {
         this.gridEngine.move('player', 'right')
         this.gridEngine.move('player_clothes', 'right')
         this.gridEngine.move('player_hair', 'right')
+        this.gridEngine.move('shadow', 'right')
         this.playerDirection = 'right'
       } else if (cursors.up.isDown) {
         this.gridEngine.move('player', 'up')
         this.gridEngine.move('player_clothes', 'up')
         this.gridEngine.move('player_hair', 'up')
+        this.gridEngine.move('shadow', 'up')
         this.playerDirection = 'up'
       } else if (cursors.down.isDown) {
         this.gridEngine.move('player', 'down')
         this.gridEngine.move('player_clothes', 'down')
         this.gridEngine.move('player_hair', 'down')
+        this.gridEngine.move('shadow', 'down')
         this.playerDirection = 'down'
       }
       this.player.updateAnimation(this.playerDirection, isMoving)
@@ -267,6 +291,7 @@ export default class GameScene extends Phaser.Scene {
     const playerSprite = character.sprite
     const clothingSprite = character.clothesSprite
     const { hairSprite } = character
+    const { shadowSprite } = character
 
     if (this.mapKey !== 'houseMap') {
       const playerTile = this.map
@@ -279,24 +304,28 @@ export default class GameScene extends Phaser.Scene {
         playerSprite.setDepth(housesLayer.depth + 1)
         clothingSprite.setDepth(housesLayer.depth + 1)
         hairSprite.setDepth(housesLayer.depth + 1)
+        shadowSprite.setDepth(playerSprite.depth - 1)
       } else {
         playerSprite.setDepth(8)
         clothingSprite.setDepth(8)
         hairSprite.setDepth(8)
+        shadowSprite.setDepth(7)
       }
     } else {
       playerSprite.setDepth(8)
       clothingSprite.setDepth(8)
       hairSprite.setDepth(8)
+      shadowSprite.setDepth(7)
     }
   }
 
   createOtherPlayer(playerInfo, playerId) {
-    const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair', playerInfo.username)
+    const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair', 'shadow', playerInfo.username)
 
     otherPlayer.sprite.setPosition(playerInfo.x, playerInfo.y)
     otherPlayer.clothesSprite.setPosition(playerInfo.x, playerInfo.y)
     otherPlayer.hairSprite.setPosition(playerInfo.x, playerInfo.y)
+    otherPlayer.shadowSprite.setPosition(playerInfo.x, playerInfo.y)
 
     // Add the new character instance to the otherPlayers object
     this.otherPlayers[playerInfo.playerId] = otherPlayer
@@ -310,6 +339,7 @@ export default class GameScene extends Phaser.Scene {
       this.otherPlayers[playerId].sprite.destroy()
       this.otherPlayers[playerId].clothesSprite.destroy()
       this.otherPlayers[playerId].hairSprite.destroy()
+      this.otherPlayers[playerId].shadowSprite.destroy()
       this.otherPlayers[playerId].usernameText.destroy()
 
       // Remove characters from the gridEngine
@@ -323,6 +353,10 @@ export default class GameScene extends Phaser.Scene {
 
       if (this.gridEngine.hasCharacter(`${playerId}_hair`)) {
         this.gridEngine.removeCharacter(`${playerId}_hair`)
+      }
+
+      if (this.gridEngine.hasCharacter(`${playerId}_shadow`)) {
+        this.gridEngine.removeCharacter(`${playerId}_shadow`)
       }
       delete this.otherPlayers[playerId]
     }
@@ -338,6 +372,7 @@ export default class GameScene extends Phaser.Scene {
     otherPlayer.sprite.y = playerInfo.y
     otherPlayer.clothesSprite.setPosition(playerInfo.x, playerInfo.y)
     otherPlayer.hairSprite.setPosition(playerInfo.x, playerInfo.y)
+    otherPlayer.shadowSprite.setPosition(playerInfo.x, playerInfo.y)
 
     if (playerInfo.moving) {
       otherPlayer.updateAnimation(playerInfo.direction, playerInfo.moving)
@@ -380,6 +415,18 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.gridEngine.addCharacter(gridEngineOtherPlayerHairConfig)
+
+    const gridEngineOtherPlayerShadowConfig = {
+      id: `${playerId}_shadow`,
+      sprite: this.otherPlayers[playerId].shadowSprite,
+      startPosition: {
+        x: this.otherPlayers[playerId].shadowSprite.x,
+        y: this.otherPlayers[playerId].shadowSprite.y,
+      },
+      speed: 4,
+    }
+
+    this.gridEngine.addCharacter(gridEngineOtherPlayerShadowConfig)
   }
 
   handleChatMessage(messageData) {
@@ -405,6 +452,7 @@ export default class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player.sprite, doorZone, this.handleTeleport, null, this)
       this.physics.add.overlap(this.player.clothesSprite, doorZone, this.handleTeleport, null, this)
       this.physics.add.overlap(this.player.hairSprite, doorZone, this.handleTeleport, null, this)
+      this.physics.add.overlap(this.player.shadowSprite, doorZone, this.handleTeleport, null, this)
     })
   }
 
