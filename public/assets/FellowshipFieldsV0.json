@@ -898,6 +898,40 @@
          "y":0
         }, 
         {
+         "draworder":"topdown",
+         "id":22,
+         "name":"Doors",
+         "objects":[
+                {
+                 "height":16,
+                 "id":52,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"destination",
+                         "type":"string",
+                         "value":"houseMap"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":432,
+                 "y":240
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"destination",
+                 "type":"string",
+                 "value":"houseMap"
+                }],
+         "type":"objectgroup",
+         "visible":false,
+         "x":0,
+         "y":0
+        }, 
+        {
          "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 0,
             0, 9857, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 9857, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9857, 9857, 9857, 9857, 9857, 0, 0, 9857, 0,
@@ -953,43 +987,9 @@
          "width":60,
          "x":0,
          "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":22,
-         "name":"Doors",
-         "objects":[
-                {
-                 "height":16,
-                 "id":31,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"destination",
-                         "type":"string",
-                         "value":"houseMap"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":432,
-                 "y":240
-                }],
-         "opacity":1,
-         "properties":[
-                {
-                 "name":"destination",
-                 "type":"string",
-                 "value":"houseMap"
-                }],
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
         }],
- "nextlayerid":23,
- "nextobjectid":43,
+ "nextlayerid":24,
+ "nextobjectid":53,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.0",
@@ -1219,10 +1219,28 @@
                         }]
                 }, 
                 {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"ge_collide",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":182,
+                 "properties":[
+                        {
+                         "name":"ge_collide",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
                  "id":195,
                  "properties":[
                         {
-                         "name":"ge_collide_top",
+                         "name":"ge_collide",
                          "type":"bool",
                          "value":true
                         }]

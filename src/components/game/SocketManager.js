@@ -10,8 +10,6 @@ export default class SocketManager {
     // Emit player's initial position
     if (this.scene.mapKey !== 'houseMap') {
       socket.emit('playerCreated', {
-        x: 30,
-        y: 20,
         playerId: this.playerId,
         direction: 'down',
       })
@@ -19,8 +17,6 @@ export default class SocketManager {
 
     if (this.scene.mapKey === 'houseMap') {
       socket.emit('playerCreatedInHouse', {
-        x: 30,
-        y: 20,
         playerId: this.playerId,
         direction: 'up',
       })

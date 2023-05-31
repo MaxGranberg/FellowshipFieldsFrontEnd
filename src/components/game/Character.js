@@ -26,6 +26,10 @@ class Character {
     const sprite = this.scene.physics.add.sprite(0, 0, key)
     sprite.setDepth(10)
     sprite.scale = 0.8
+
+    sprite.body.setSize(sprite.width * 0.8, sprite.height * 0.8)
+    sprite.body.setOffset(sprite.width * 0.3, sprite.height * 0.4)
+
     return sprite
   }
 

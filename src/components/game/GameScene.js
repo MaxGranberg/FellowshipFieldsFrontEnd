@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
   init(data) {
     this.username = data.username
     this.mapKey = data.mapKey
+    this.fadeTriggered = data.fade
   }
 
   preload() {
@@ -26,11 +27,10 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     const map = this.createMap()
-    const layers = this.createLayers(map)
+    this.createLayers(map)
     this.createAnimatedTrees(map)
     this.createCharacters()
     this.createCameraController(map)
-    this.createPhysicsCollisions(layers)
     this.createGridEngine(map)
     const socketManager = new SocketManager(this, socket)
     socketManager.handleSocketEvents()
@@ -80,6 +80,8 @@ export default class GameScene extends Phaser.Scene {
         const layerName = layer.name
         this.layers[layerName] = map.createLayer(layerName, tilesets)
       })
+
+      this.doors = map.getObjectLayer('Doors').objects
     }
 
     return this.layers
@@ -123,12 +125,6 @@ export default class GameScene extends Phaser.Scene {
     this.cameraController.follow(this.player.sprite)
   }
 
-  createPhysicsCollisions(layers) {
-    layers.Collisions.setCollisionByProperty({ collides: true })
-    this.physics.add.collider(this.player.sprite, layers.Collisions)
-    this.physics.add.collider(this.npc.sprite, layers.Collisions)
-  }
-
   createGridEngine(map) {
     if (this.mapKey === 'houseMap') {
       const gridEngineConfig = {
@@ -136,19 +132,19 @@ export default class GameScene extends Phaser.Scene {
           {
             id: 'player',
             sprite: this.player.sprite,
-            startPosition: { x: 8, y: 14 },
+            startPosition: { x: 8, y: 12 },
             speed: 4,
           },
           {
             id: 'player_clothes',
             sprite: this.player.clothesSprite,
-            startPosition: { x: 8, y: 14 },
+            startPosition: { x: 8, y: 12 },
             speed: 4,
           },
           {
             id: 'player_hair',
             sprite: this.player.hairSprite,
-            startPosition: { x: 8, y: 14 },
+            startPosition: { x: 8, y: 12 },
             speed: 4,
           },
         ],
@@ -161,19 +157,19 @@ export default class GameScene extends Phaser.Scene {
           {
             id: 'player',
             sprite: this.player.sprite,
-            startPosition: { x: 30, y: 20 },
+            startPosition: this.lastPosition || { x: 30, y: 20 },
             speed: 4,
           },
           {
             id: 'player_clothes',
             sprite: this.player.clothesSprite,
-            startPosition: { x: 30, y: 20 },
+            startPosition: this.lastPosition || { x: 30, y: 20 },
             speed: 4,
           },
           {
             id: 'player_hair',
             sprite: this.player.hairSprite,
-            startPosition: { x: 30, y: 20 },
+            startPosition: this.lastPosition || { x: 30, y: 20 },
             speed: 4,
           },
           {
@@ -344,9 +340,17 @@ export default class GameScene extends Phaser.Scene {
       this.otherPlayers[playerId].usernameText.destroy()
 
       // Remove characters from the gridEngine
-      this.gridEngine.removeCharacter(playerId)
-      this.gridEngine.removeCharacter(`${playerId}_clothes`)
-      this.gridEngine.removeCharacter(`${playerId}_hair`)
+      if (this.gridEngine.hasCharacter(playerId)) {
+        this.gridEngine.removeCharacter(playerId)
+      }
+
+      if (this.gridEngine.hasCharacter(`${playerId}_clothes`)) {
+        this.gridEngine.removeCharacter(`${playerId}_clothes`)
+      }
+
+      if (this.gridEngine.hasCharacter(`${playerId}_hair`)) {
+        this.gridEngine.removeCharacter(`${playerId}_hair`)
+      }
       delete this.otherPlayers[playerId]
     }
   }
@@ -420,7 +424,11 @@ export default class GameScene extends Phaser.Scene {
       // Enable physics on the zone
       this.physics.world.enable(doorZone)
 
-      doorZone.setData('houseMap', door.properties.find((property) => property.name === 'destination').value)
+      if (this.mapKey === 'map') {
+        doorZone.setData('houseMap', door.properties.find((property) => property.name === 'destination').value)
+      } else {
+        doorZone.setData('map', door.properties.find((property) => property.name === 'destination').value)
+      }
       this.physics.add.overlap(this.player.sprite, doorZone, this.handleTeleport, null, this)
       this.physics.add.overlap(this.player.clothesSprite, doorZone, this.handleTeleport, null, this)
       this.physics.add.overlap(this.player.hairSprite, doorZone, this.handleTeleport, null, this)
@@ -428,17 +436,30 @@ export default class GameScene extends Phaser.Scene {
   }
 
   handleTeleport(player, doorZone) {
-    const target = doorZone.getData('houseMap')
-    // do something with the target, like load a new map or move the player to a new position
-    this.loadNewMap(target)
+    if (this.mapKey === 'map') {
+      const target = doorZone.getData('houseMap')
+
+      // Store current position before teleport
+      const playerTile = this.map
+        .worldToTileXY(this.player.sprite.x, this.player.sprite.y + this.player.sprite.height / 4)
+
+      this.lastPosition = { x: playerTile.x + 1, y: playerTile.y + 2 }
+      this.loadNewMap(target)
+    } else {
+      const target = doorZone.getData('map')
+      this.loadNewMap(target)
+    }
   }
 
   loadNewMap(target) {
-    // this would be a good place to use a fade out animation before changing the map
-    this.cameras.main.fadeOut(500)
-    this.time.delayedCall(500, () => {
-      this.scene.restart({ mapKey: target, username: this.username })
-    }, [], this)
+    if (!this.fadeTriggered) {
+      this.fadeTriggered = true
+      this.cameras.main.fadeOut(500)
+      this.cameras.main.on('camerafadeoutcomplete', () => {
+        this.scene
+          .restart({ mapKey: target, username: this.username, fade: this.fadeTriggered = false })
+      })
+    }
     socket.emit('playerChangedLocation', {
       playerId: this.playerId,
       mapKey: target, // the new map key
