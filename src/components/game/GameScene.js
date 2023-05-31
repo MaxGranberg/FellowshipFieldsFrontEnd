@@ -36,7 +36,7 @@ export default class GameScene extends Phaser.Scene {
     socketManager.handleSocketEvents()
     this.createTeleportZones()
     this.input.keyboard.on('keydown', (event) => {
-      if (event.ctrlKey && event.key === 'g') {
+      if (event.altKey && event.key === 't') {
         this.scene.start('MiniGameScene')
       }
     })
