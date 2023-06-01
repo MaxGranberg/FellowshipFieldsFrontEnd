@@ -6,6 +6,7 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create(data) {
-    this.scene.start('GameScene', data)
+    const { username } = data
+    this.scene.start('GameScene', { username, mapKey: 'map' })
   }
 }

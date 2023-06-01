@@ -9,6 +9,7 @@ import { GridEngine } from 'grid-engine'
 import GameScene from './GameScene'
 import socket from '../socket'
 import BootScene from './BootScene'
+import MiniGameScene from './MiniGameScene'
 
 const PhaserGame = forwardRef((props, ref) => {
   const { username } = props
@@ -45,7 +46,7 @@ const PhaserGame = forwardRef((props, ref) => {
       width: 960,
       height: 640,
       parent: gameRef.current,
-      scene: [BootScene, GameScene],
+      scene: [BootScene, GameScene, MiniGameScene],
       plugins: {
         scene: [
           { key: 'gridEngine', plugin: GridEngine, mapping: 'gridEngine' },
