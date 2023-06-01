@@ -70,6 +70,7 @@ function App() {
             <Game ref={gameRef} username={username} />
           </div>
           <Chat />
+          <div className="hint-container">Press ALT and T to start a mini-game of Tic Tac Toe.</div>
         </div>
       ) : (
         <div className="login-container">
