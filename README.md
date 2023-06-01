@@ -1,70 +1,45 @@
-# Getting Started with Create React App
+# Fellowship Fields
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Fellowship Fields is a multiplayer online game built with React, Phaser 3 and gridEngine.
 
-## Available Scripts
+## Usage
 
-In the project directory, you can run:
+After logging in or registering, the user enters the game field. Here, the user can move around and interact with other players. The chat functionality allows communication with other players in real-time. Users can also start a mini-game of Tic Tac Toe by pressing ALT and T.
 
-### `npm start`
+## Gameplay
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The game is controlled via keyboard input. Here's a quick guide to help you get started:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Arrow keys for navigation.
 
-### `npm test`
+ALT + 't' to start a mini-game.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Code Overview
 
-### `npm run build`
+The main part of the game is contained in the GameScene class. Here's a quick overview of some important functions:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+init(data): Initializes the game scene with provided data.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+preload(): Preloads all the necessary assets for the game.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+create(): Creates the game scene, including the map, characters, camera, and GridEngine setup.
 
-### `npm run eject`
+update(): Updates the game scene, responsible for character movements, depths, and tree animations.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+createCharacters(): Creates the game characters.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+createGridEngine(map): Initializes GridEngine with the given map and characters.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+updateCharacterMovements(): Handles character movements based on user input.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+createOtherPlayer(playerInfo, playerId): Handles creation of other players in the multiplayer environment.
 
-## Learn More
+## Technologies Used
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+JavaScript & React: The primary language of the game development.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Phaser 3: A popular game framework used for creating the game.
 
-### Code Splitting
+GridEngine: Used for handling grid-based movements and collisions in the game.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Tiled: Used for designing the game-world.
