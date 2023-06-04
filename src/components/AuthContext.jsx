@@ -8,6 +8,13 @@ import PropTypes from 'prop-types'
 
 const AuthContext = createContext()
 
+/**
+ * Provides an authentication context for child components.
+ *
+ * @component
+ * @param {Object} props The props object.
+ * @param {ReactNode} props.children The child nodes to be rendered within the provider.
+ */
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState(localStorage.getItem('username') || '')

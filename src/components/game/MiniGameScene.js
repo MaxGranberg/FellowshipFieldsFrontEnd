@@ -11,6 +11,11 @@ const GRID_SIZE = 3 // 3x3 grid for tic tac toe
 const GRID_X = (GAME_WIDTH - GRID_SIZE * SQUARE_SIZE) / 2
 const GRID_Y = (GAME_HEIGHT - GRID_SIZE * SQUARE_SIZE) / 2
 
+/**
+ * MiniGameScene class extends Phaser.Scene
+ *
+ * @extends Phaser.Scene
+ */
 export default class MiniGameScene extends Phaser.Scene {
   constructor() {
     super('MiniGameScene')

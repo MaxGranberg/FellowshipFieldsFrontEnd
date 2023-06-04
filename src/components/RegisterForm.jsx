@@ -1,6 +1,14 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
+/**
+ * A form that allows users to register a new account.
+ *
+ * @component
+ * @param {Object} props The props object.
+ * @param {Function} props.onBackToLogin Callback to go back to login form.
+ * @param {Function} props.setGlobalFlashMessage Callback to set global flash message.
+ */
 function RegisterForm({ onBackToLogin, setGlobalFlashMessage }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

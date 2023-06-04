@@ -1,3 +1,6 @@
+/**
+ * A class that represents a chat bubble in a game scene.
+ */
 class ChatBubble {
   constructor(scene, character) {
     this.scene = scene
@@ -7,6 +10,11 @@ class ChatBubble {
     this.timeout = null
   }
 
+  /**
+   * Displays a message in the chat bubble.
+   *
+   * @param {string} message - The message to display.
+   */
   showMessage(message) {
     if (this.bubble) {
       this.bubble.destroy()
@@ -46,6 +54,9 @@ class ChatBubble {
     }, 5000)
   }
 
+  /**
+   * Hides the chat bubble and removes the displayed message.
+   */
   hideMessage() {
     if (this.bubble) {
       this.bubble.destroy()
@@ -59,6 +70,9 @@ class ChatBubble {
     }
   }
 
+  /**
+   * Updates the position of the chat bubble based on the character's position.
+   */
   update() {
     if (this.container) {
       this.container.setPosition(this.character.sprite.x - 1, this.character.sprite.y - 1)

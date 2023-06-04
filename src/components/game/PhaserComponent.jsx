@@ -11,6 +11,11 @@ import socket from '../socket'
 import BootScene from './BootScene'
 import MiniGameScene from './MiniGameScene'
 
+/**
+ * This is a PhaserGame component, a wrapper for the Phaser Game instance.
+ *
+ * @prop {string} username - The username of the current player.
+ */
 const PhaserGame = forwardRef((props, ref) => {
   const { username } = props
   const gameRef = useRef()
@@ -18,6 +23,11 @@ const PhaserGame = forwardRef((props, ref) => {
   // eslint-disable-next-line no-unused-vars
   const [players, setPlayers] = useState({})
 
+  /**
+   * Handles player movements and updates game scene.
+   *
+   * @param {object} playerData - Player data with the new position.
+   */
   const handlePlayerMoved = (playerData) => {
     // Check if game is not null
     if (game) {
@@ -27,6 +37,12 @@ const PhaserGame = forwardRef((props, ref) => {
     }
   }
 
+  /**
+   * Handles new chat messages and updates the game scene.
+   *
+   * @callback
+   * @param {string} message - New chat message.
+   */
   const handleChatMessage = useCallback((message) => {
     // Update the game scene with the new chat message
     if (game) {
@@ -35,6 +51,9 @@ const PhaserGame = forwardRef((props, ref) => {
     }
   }, [game])
 
+  /**
+   * Exposes the handlePlayerMoved and handleChatMessage methods.
+   */
   useImperativeHandle(ref, () => ({
     handlePlayerMoved,
     handleChatMessage,

@@ -3,6 +3,14 @@ import PropTypes from 'prop-types'
 import AuthContext from './AuthContext'
 import socket from './socket'
 
+/**
+ * A form that allows users to login with an existing account.
+ *
+ * @component
+ * @param {Object} props The props object.
+ * @param {Function} props.onRegister Callback to show registration form.
+ * @param {Function} props.setGlobalFlashMessage Callback to set global flash message.
+ */
 function LoginForm({ onRegister, setGlobalFlashMessage }) {
   const { setIsAuthenticated, setUsername } = useContext(AuthContext)
   const [usernameLocal, setUsernameLocal] = useState('')

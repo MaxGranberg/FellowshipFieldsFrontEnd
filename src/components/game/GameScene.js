@@ -5,6 +5,10 @@ import Character from './Character'
 import CameraController from './CameraController'
 import SocketManager from './SocketManager'
 
+/**
+ * GameScene class handles the logic and rendering of the game scene.
+ * @extends Phaser.Scene
+ */
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene')
@@ -14,17 +18,28 @@ export default class GameScene extends Phaser.Scene {
     this.otherPlayers = {}
   }
 
+  /**
+   * Initializes the scene with the provided data.
+   *
+   * @param {object} data - The data to initialize the scene with.
+   */
   init(data) {
     this.username = data.username
     this.mapKey = data.mapKey
     this.fadeTriggered = data.fade
   }
 
+  /**
+   * Preloads the necessary assets for the scene.
+   */
   preload() {
     const assetLoader = new AssetLoader(this)
     assetLoader.preload()
   }
 
+  /**
+   * Creates the scene objects.
+   */
   create() {
     const map = this.createMap()
     this.createLayers(map)
@@ -45,6 +60,9 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
+  /**
+   * Updates the scene objects.
+   */
   update() {
     this.updateCharacterMovements()
     this.updateCharacterDepths()
@@ -55,10 +73,21 @@ export default class GameScene extends Phaser.Scene {
 
   // -------------------- Custom methods -------------------------------------
 
+  /**
+   * Creates a new map.
+   *
+   * @returns {Phaser.Tilemaps.Tilemap} The created map.
+   */
   createMap() {
     return this.make.tilemap({ key: this.mapKey })
   }
 
+  /**
+   * Creates the necessary layers for the provided map.
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map - The map to create layers for.
+   * @returns {object} The created layers.
+   */
   createLayers(map) {
     const housesTileset = map.addTilesetImage('houses', 'houses')
 
@@ -87,6 +116,11 @@ export default class GameScene extends Phaser.Scene {
     return this.layers
   }
 
+  /**
+   * Creates animated trees for the provided map.
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map - The map to create animated trees for.
+   */
   createAnimatedTrees(map) {
     if (this.mapKey !== 'houseMap') {
       this.anims.create({
@@ -109,6 +143,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Creates characters for the scene.
+   */
   createCharacters() {
     if (this.player) {
       this.removeOtherPlayer(this.playerId)
@@ -119,12 +156,22 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Creates a camera controller for the provided map.
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map - The map to create a camera controller for.
+   */
   createCameraController(map) {
     this.cameraController = new CameraController(this.cameras.main)
     this.cameraController.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameraController.follow(this.player.sprite)
   }
 
+  /**
+   * Creates a grid engine for the provided map.
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map - The map to create a grid engine for.
+   */
   createGridEngine(map) {
     if (this.mapKey === 'houseMap') {
       const gridEngineConfig = {
@@ -211,6 +258,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Updates the movements of the characters in the scene.
+   */
   updateCharacterMovements() {
     const cursors = this.input.keyboard.createCursorKeys()
     this.input.keyboard.clearCaptures()
@@ -267,6 +317,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Updates the depths of the characters in the scene.
+   */
   updateCharacterDepths() {
     if (this.mapKey !== 'houseMap') {
       this.updatePlayerDepth(this.npc)
@@ -274,6 +327,9 @@ export default class GameScene extends Phaser.Scene {
     this.updatePlayerDepth(this.player)
   }
 
+  /**
+   * Updates the animations of the trees in the scene.
+   */
   updateTreeAnimations() {
     Object.values(this.treeSprites).forEach((treeSprite) => {
       if (this.cameras.main.worldView.contains(treeSprite.x, treeSprite.y)) {
@@ -287,6 +343,11 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
+  /**
+   * Updates the depth of the provided character.
+   *
+   * @param {Character} character - The character to update the depth for.
+   */
   updatePlayerDepth(character) {
     const playerSprite = character.sprite
     const clothingSprite = character.clothesSprite
@@ -319,6 +380,12 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Creates another player with the provided player info and player ID.
+   *
+   * @param {object} playerInfo - The information of the player to create.
+   * @param {string} playerId - The ID of the player to create.
+   */
   createOtherPlayer(playerInfo, playerId) {
     const otherPlayer = new Character(this, 'player', 'player_clothes', 'player_hair', 'shadow', playerInfo.username)
 
@@ -334,6 +401,11 @@ export default class GameScene extends Phaser.Scene {
     this.createGridEngineOtherPlayer(playerId)
   }
 
+  /**
+   * Removes another player with the provided player ID.
+   *
+   * @param {string} playerId - The ID of the player to remove.
+   */
   removeOtherPlayer(playerId) {
     if (this.otherPlayers[playerId]) {
       this.otherPlayers[playerId].sprite.destroy()
@@ -362,6 +434,11 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Handles the moved player with the provided player info.
+   *
+   * @param {object} playerInfo - The information of the moved player.
+   */
   handlePlayerMoved(playerInfo) {
     if (playerInfo.playerId === this.playerId) {
       return
@@ -379,6 +456,11 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Creates a grid engine for another player with the provided player ID.
+   *
+   * @param {string} playerId - The ID of the other player to create a grid engine for.
+   */
   createGridEngineOtherPlayer(playerId) {
     const gridEngineOtherPlayerConfig = {
       id: playerId,
@@ -429,6 +511,11 @@ export default class GameScene extends Phaser.Scene {
     this.gridEngine.addCharacter(gridEngineOtherPlayerShadowConfig)
   }
 
+  /**
+   * Handles an incoming chat message and displays it on the appropriate player's chat bubble.
+   *
+   * @param {Object} messageData - The data containing the player ID and the message text.
+   */
   handleChatMessage(messageData) {
     const { playerId, message } = messageData
     if (playerId === this.playerId) {
@@ -438,6 +525,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Creates zones at the locations of doors for the purpose of teleportation.
+   */
   createTeleportZones() {
     this.doors.forEach((door) => {
       const doorZone = this.add.zone(door.x, door.y, door.width, door.height).setOrigin(0)
@@ -456,7 +546,13 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
-  handleTeleport(player, doorZone) {
+  /**
+   * Handles the event when the player interacts with a teleport zone. The player is transported to
+   * a different map based on the zone's metadata.
+   *
+   * @param {Object} doorZone - The teleport zone that the player interacted with.
+   */
+  handleTeleport(doorZone) {
     if (this.mapKey === 'map') {
       const target = doorZone.getData('houseMap')
 
@@ -472,6 +568,12 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Loads a new map when a player moves to a new location. Also emits a 'playerChangedLocation'
+   * event to the server to update the player's location on other clients.
+   *
+   * @param {string} target - The key of the new map to load.
+   */
   loadNewMap(target) {
     if (!this.fadeTriggered) {
       this.fadeTriggered = true

@@ -1,5 +1,14 @@
 import ChatBubble from '../chat/ChatBubble'
 
+/**
+ * Represents a character in a game.
+ * @param {Phaser.Scene} scene - The current scene.
+ * @param {string} spriteKey - The key for the character sprite.
+ * @param {string} clothesKey - The key for the character's clothes sprite.
+ * @param {string} hairKey - The key for the character's hair sprite.
+ * @param {string} shadowKey - The key for the character's shadow sprite.
+ * @param {string} username - The username of the character.
+ */
 class Character {
   constructor(scene, spriteKey, clothesKey, hairKey, shadowKey, username) {
     this.scene = scene
@@ -24,6 +33,12 @@ class Character {
     this.createAnimations(this.hairKey, `${spriteKey}_hair`)
   }
 
+  /**
+   * Creates a sprite for the character.
+   *
+   * @param {string} key - The key for the sprite.
+   * @returns {Phaser.Physics.Arcade.Sprite} The created sprite.
+   */
   createSprite(key) {
     const sprite = this.scene.physics.add.sprite(0, 0, key)
     sprite.setDepth(10)
@@ -35,6 +50,13 @@ class Character {
     return sprite
   }
 
+  /**
+   * Creates an accessory sprite for the character.
+   *
+   * @param {string} key - The key for the sprite.
+   * @param {Phaser.GameObjects.Sprite} parentSprite The parent sprite to which this sprite belongs.
+   * @returns {Phaser.GameObjects.Sprite} The created accessory sprite.
+   */
   createAccessorySprite(key, parentSprite) {
     const sprite = this.scene.add.sprite(parentSprite.x, parentSprite.y, key)
     sprite.setDepth(parentSprite.depth + 1)
@@ -42,6 +64,12 @@ class Character {
     return sprite
   }
 
+  /**
+   * Creates animations for a sprite.
+   *
+   * @param {string} spriteKey - The key for the sprite.
+   * @param {string} [suffix=''] - An optional suffix for the animation key.
+   */
   createAnimations(spriteKey, suffix = '') {
     // Create walking animation for each row of sprite sheet. (8 columns and 4 rows)
     const directions = ['down', 'up', 'right', 'left']
@@ -59,6 +87,12 @@ class Character {
     })
   }
 
+  /**
+   * Updates the animation of the character.
+   *
+   * @param {string} direction - The direction the character is moving.
+   * @param {boolean} isMoving - Whether the character is moving.
+   */
   updateAnimation(direction, isMoving) {
     const stopFrame = this.getStopFrame(direction)
     if (isMoving) {
@@ -75,6 +109,12 @@ class Character {
     }
   }
 
+  /**
+   * Returns the stop frame based on the direction.
+   *
+   * @param {string} direction - The direction the character is moving.
+   * @returns {number} The stop frame.
+   */
   getStopFrame(direction) {
     switch (direction) {
       case 'up':
@@ -95,8 +135,12 @@ class Character {
     return this.stopFrame
   }
 
+  /**
+   * Creates a text object for the character's username.
+   *
+   * @returns {Phaser.GameObjects.Text} The text object.
+   */
   createUsernameText() {
-    // Create a new text object
     const text = this.scene.add.text(0, 0, this.username, {
       fontSize: '16px',
       color: '#000000',
@@ -113,10 +157,18 @@ class Character {
     return text
   }
 
+  /**
+   * Makes the character say a message.
+   *
+   * @param {string} message - The message for the character to say.
+   */
   say(message) {
     this.chatBubble.showMessage(message)
   }
 
+  /**
+   * Updates the character.
+   */
   update() {
     this.chatBubble.update()
     this.usernameText.setPosition(this.sprite.x, this.sprite.y)

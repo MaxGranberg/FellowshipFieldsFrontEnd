@@ -1,11 +1,17 @@
 import socket from '../socket'
 
+/**
+ * Class for managing socket events in a Phaser scene.
+ */
 export default class SocketManager {
   constructor(scene) {
     this.scene = scene
     this.playerId = socket.id
   }
 
+  /**
+   * Sets up listeners for socket events.
+   */
   handleSocketEvents() {
     // Emit player's initial position
     if (this.scene.mapKey !== 'houseMap') {

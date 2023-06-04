@@ -1,3 +1,9 @@
+/**
+ * Converts specific string patterns in the given input string to emojis.
+ *
+ * @param {string} inputString - The input string to convert.
+ * @returns {string} The converted string with emojis.
+ */
 const convertToEmoji = (inputString) => {
   let string = inputString
   string = string.replace(/:\)/g, String.fromCodePoint(0x1F603))

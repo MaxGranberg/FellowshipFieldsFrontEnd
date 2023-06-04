@@ -1,8 +1,14 @@
+/**
+ * Class for loading assets in a Phaser scene.
+ */
 export default class AssetLoader {
   constructor(scene) {
     this.scene = scene
   }
 
+  /**
+   * Preload assets for the scene. Depending on the map key, different assets are loaded.
+   */
   preload() {
     const { mapKey } = this.scene
 

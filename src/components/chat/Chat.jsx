@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react'
 import socket from '../socket'
 import convertToEmoji from './emojiConverter'
 
+/**
+ * A chat component for displaying and sending messages.
+ *
+ * @returns {ReactNode} The rendered chat component.
+ */
 function Chat() {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
