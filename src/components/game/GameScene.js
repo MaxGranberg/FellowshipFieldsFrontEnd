@@ -550,9 +550,10 @@ export default class GameScene extends Phaser.Scene {
    * Handles the event when the player interacts with a teleport zone. The player is transported to
    * a different map based on the zone's metadata.
    *
+   * @param {Object} player - The player sprite.
    * @param {Object} doorZone - The teleport zone that the player interacted with.
    */
-  handleTeleport(doorZone) {
+  handleTeleport(player, doorZone) {
     if (this.mapKey === 'map') {
       const target = doorZone.getData('houseMap')
 
