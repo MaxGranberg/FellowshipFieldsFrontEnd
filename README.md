@@ -47,3 +47,4 @@ Tiled: Used for designing the game-world.
 ## Other important repositories
 
 https://github.com/MaxGranberg/fellowshipfields-realtime-communication
+https://github.com/MaxGranberg/fellowshipfields-auth-service
