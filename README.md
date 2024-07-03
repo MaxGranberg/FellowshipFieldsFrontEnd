@@ -43,3 +43,7 @@ Phaser 3: A popular game framework used for creating the game.
 GridEngine: Used for handling grid-based movements and collisions in the game.
 
 Tiled: Used for designing the game-world.
+
+## Other important repositories
+
+https://github.com/MaxGranberg/fellowshipfields-realtime-communication
